@@ -13,14 +13,7 @@ import type {
   GDACSFeature,
   WeatherAlert,
 } from './intel-types';
-
-function getApiUrl(path: string, params?: Record<string, string>): string {
-  const base =
-    typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-  const url = new URL(path, base);
-  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  return url.toString();
-}
+import { getApiUrl } from './base-url';
 
 async function wmGet<T>(path: string, params?: Record<string, string>): Promise<T> {
   const res = await fetch(getApiUrl(`/api/intel/wm${path}`, params), {

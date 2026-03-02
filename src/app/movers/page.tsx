@@ -9,7 +9,7 @@ import { MoversTableSkeleton } from '@/components/LoadingSkeleton';
 import { MoverCard } from '@/components/MoverCard';
 
 type SortKey = 'rank' | 'change' | 'volume' | 'recent';
-type ImpactFilter = 'all' | 'critical' | 'high' | 'medium' | 'low';
+type ImpactFilter = 'all' | 'critical' | 'medium' | 'low';
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'rank', label: 'Rank' },
@@ -21,7 +21,6 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 const IMPACT_FILTERS: { value: ImpactFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'critical', label: 'Critical' },
-  { value: 'high', label: 'High' },
   { value: 'medium', label: 'Medium' },
   { value: 'low', label: 'Low' },
 ];
@@ -41,9 +40,10 @@ export default function MoversPage() {
     let items = data ?? [];
 
     if (impact !== 'all') {
-      items = items.filter(
-        (m) => m.feed_item.related_markets?.[0]?.impact_level === impact,
-      );
+      items = items.filter((m) => {
+        const level = m.feed_item.related_markets?.[0]?.impact_level?.toLowerCase();
+        return level === impact;
+      });
     }
 
     const sorted = [...items];
@@ -81,8 +81,7 @@ export default function MoversPage() {
     );
     const avgChange = all.length > 0 ? totalChange / all.length : 0;
     const critical = all.filter(
-      (m) => m.feed_item.related_markets?.[0]?.impact_level === 'critical' ||
-             m.feed_item.related_markets?.[0]?.impact_level === 'high',
+      (m) => m.feed_item.related_markets?.[0]?.impact_level?.toLowerCase() === 'critical',
     ).length;
 
     return { total: all.length, avgChange, critical };
@@ -105,7 +104,7 @@ export default function MoversPage() {
             type="button"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-zinc-100 disabled:opacity-50"
+            className="cursor-pointer rounded-lg border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-[11px] font-medium text-zinc-300 transition-all hover:border-white/[0.2] hover:bg-white/[0.1] hover:text-zinc-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white/[0.05]"
           >
             {isFetching ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -129,7 +128,7 @@ export default function MoversPage() {
             {stats.critical > 0 && (
               <div className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
-                <span className="text-red-400 font-medium">{stats.critical} high impact</span>
+                <span className="text-red-400 font-medium">{stats.critical} critical/high impact</span>
               </div>
             )}
           </div>
@@ -144,10 +143,10 @@ export default function MoversPage() {
                 key={opt.value}
                 type="button"
                 onClick={() => setSort(opt.value)}
-                className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+                className={`cursor-pointer rounded-md border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
                   sort === opt.value
-                    ? 'bg-white/[0.1] text-zinc-100'
-                    : 'text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300'
+                    ? 'border-accent/40 bg-accent/10 text-accent'
+                    : 'border-transparent bg-white/[0.03] text-zinc-500 hover:border-white/[0.12] hover:bg-white/[0.08] hover:text-zinc-300 active:scale-[0.98]'
                 }`}
               >
                 {opt.label}
@@ -162,10 +161,10 @@ export default function MoversPage() {
                 key={opt.value}
                 type="button"
                 onClick={() => setImpact(opt.value)}
-                className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+                className={`cursor-pointer rounded-md border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
                   impact === opt.value
-                    ? 'bg-white/[0.1] text-zinc-100'
-                    : 'text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300'
+                    ? 'border-accent/40 bg-accent/10 text-accent'
+                    : 'border-transparent bg-white/[0.03] text-zinc-500 hover:border-white/[0.12] hover:bg-white/[0.08] hover:text-zinc-300 active:scale-[0.98]'
                 }`}
               >
                 {opt.label}
@@ -204,7 +203,7 @@ export default function MoversPage() {
               <button
                 type="button"
                 onClick={() => setImpact('all')}
-                className="mt-3 rounded-lg bg-white/[0.06] px-3 py-1.5 text-[11px] text-zinc-300 hover:bg-white/[0.1] transition-colors"
+                className="mt-3 cursor-pointer rounded-lg border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-[11px] text-zinc-300 transition-all hover:border-white/[0.2] hover:bg-white/[0.1] hover:text-zinc-100"
               >
                 Show all
               </button>

@@ -1,12 +1,5 @@
 import type { FeedItem } from './types';
-
-function getApiUrl(path: string, params?: Record<string, string>): string {
-  const base =
-    typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-  const url = new URL(path, base);
-  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  return url.toString();
-}
+import { getApiUrl } from './base-url';
 
 /** Raw item from WorldMonitor API - flexible for unknown schema */
 interface WorldMonitorRawItem {
