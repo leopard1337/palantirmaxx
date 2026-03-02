@@ -7,12 +7,17 @@ import {
   WIDGET_CATALOG,
 } from '@/lib/dashboard-store';
 import type { FeedItem, EventData } from '@/lib/api/types';
-import { FeedWidget } from './widgets/FeedWidget';
+import { CameraFeedWidget } from './widgets/CameraFeedWidget';
+import { CryptoStablecoinWidget } from './widgets/CryptoStablecoinWidget';
+import { DisastersWeatherWidget } from './widgets/DisastersWeatherWidget';
+import { EconomicWidget } from './widgets/EconomicWidget';
+import { EmbedWidget } from './widgets/EmbedWidget';
+import { EnergyWidget } from './widgets/EnergyWidget';
 import { EventsWidget } from './widgets/EventsWidget';
+import { FeedWidget } from './widgets/FeedWidget';
+import { FlightGlobeWidget } from './widgets/FlightGlobeWidget';
 import { MarketsWidget } from './widgets/MarketsWidget';
 import { MoversWidget } from './widgets/MoversWidget';
-import { EmbedWidget } from './widgets/EmbedWidget';
-import { FlightGlobeWidget } from './widgets/FlightGlobeWidget';
 
 function WidgetSelector({
   onSelect,
@@ -43,9 +48,9 @@ function WidgetSelector({
     <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-black/60 backdrop-blur-sm">
       <div
         ref={ref}
-        className="w-64 max-h-[85%] overflow-y-auto rounded-lg border border-white/[0.1] bg-[#0a0a10] shadow-2xl animate-scale-in"
+        className="w-64 max-h-[85%] overflow-y-auto rounded-lg border border-white/[0.1] bg-surface shadow-2xl animate-scale-in"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.06] bg-[#0a0a10] px-4 py-2.5">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.06] bg-surface px-4 py-2.5">
           <span className="text-[11px] font-semibold text-zinc-200">
             Select Widget
           </span>
@@ -101,6 +106,7 @@ function WidgetSelector({
 }
 
 function getWidgetLabel(type: WidgetType): string {
+  if (type === 'camera-feed') return 'Camera Feed (All)';
   return WIDGET_CATALOG.find((w) => w.type === type)?.label ?? type;
 }
 
@@ -121,6 +127,9 @@ function WidgetContent({
       | 'telegram';
     return <FeedWidget type={feedType} onSelectItem={onSelectFeedItem} />;
   }
+  if (type.startsWith('camera-feed-') || type === 'camera-feed') {
+    return <CameraFeedWidget widgetType={type === 'camera-feed' ? 'camera-feed-all' : type} />;
+  }
   switch (type) {
     case 'events':
       return <EventsWidget onSelectEvent={onSelectEvent} />;
@@ -134,6 +143,14 @@ function WidgetContent({
       return <EmbedWidget url="https://polymarket.com" title="Polymarket" />;
     case 'embed-liveuamap':
       return <EmbedWidget url="https://liveuamap.com" title="Conflict Map" />;
+    case 'intel-crypto':
+      return <CryptoStablecoinWidget />;
+    case 'intel-economic':
+      return <EconomicWidget />;
+    case 'intel-disasters':
+      return <DisastersWeatherWidget />;
+    case 'intel-energy':
+      return <EnergyWidget />;
     default:
       return (
         <div className="flex items-center justify-center h-full text-zinc-500 text-[11px]">

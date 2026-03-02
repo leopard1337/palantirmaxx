@@ -8,12 +8,12 @@ interface CardRootProps {
 
 export function Card({ children, className, onClick }: CardRootProps) {
   const base =
-    'rounded-lg border border-white/[0.08] bg-white/[0.03] flex flex-col text-left transition-all hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998]';
+    'rounded-lg border border-white/[0.08] bg-white/[0.03] flex flex-col text-left transition-colors duration-150 hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998] focus:outline-none focus:ring-1 focus:ring-accent/40 focus:ring-offset-1 focus:ring-offset-background';
   const cls = `${base} ${className ?? ''}`;
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={cls}>
+      <button type="button" onClick={onClick} className={`${cls} cursor-pointer`}>
         {children}
       </button>
     );
@@ -29,7 +29,7 @@ export function CardHeader({
   className?: string;
 }) {
   return (
-    <div className={`px-3.5 pt-3 pb-1 shrink-0 ${className ?? ''}`}>
+    <div className={`px-3.5 pt-3 pb-2 shrink-0 ${className ?? ''}`}>
       {children}
     </div>
   );
@@ -43,7 +43,7 @@ export function CardBody({
   className?: string;
 }) {
   return (
-    <div className={`px-3.5 pb-2 flex-1 min-h-0 ${className ?? ''}`}>
+    <div className={`px-3.5 pb-3 flex-1 min-h-0 ${className ?? ''}`}>
       {children}
     </div>
   );

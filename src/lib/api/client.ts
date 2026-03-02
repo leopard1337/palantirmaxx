@@ -1,9 +1,17 @@
-const BASE_URL = 'https://api.glint.trade';
+function getBaseUrl(): string {
+  if (typeof window !== 'undefined') return window.location.origin;
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  );
+}
 
-const BEARER_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZGVmMjliZGItMjUzOC00NDI0LTk3NmUtMzUwODAzYmYxYTM2IiwiZXhwIjoxNzczMDE0NTAxLCJpYXQiOjE3NzI0MDk3MDF9.ACalhz5aTTOKUssltyI7uZLN3ygmkAnBceJGEmMRlso';
-
-const getToken = () => BEARER_TOKEN;
+function getApiUrl(path: string, params?: Record<string, string>): string {
+  const base = getBaseUrl();
+  const url = new URL(path, base);
+  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  return url.toString();
+}
 
 const dedupeCache = new Map<string, Promise<Response>>();
 const DEDUPE_MS = 100;
@@ -38,8 +46,7 @@ export async function apiRequest<T>(
   path: string,
   params?: Record<string, string>
 ): Promise<T> {
-  const search = params ? new URLSearchParams(params).toString() : '';
-  const url = `${BASE_URL}${path}${search ? `?${search}` : ''}`;
+  const url = getApiUrl('/api/glint' + path, params);
 
   const cacheKey = url;
   const existing = dedupeCache.get(cacheKey);
@@ -52,10 +59,8 @@ export async function apiRequest<T>(
     return res.json() as Promise<T>;
   }
 
-  const token = getToken();
   const promise = fetchWithRetry(url, {
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },

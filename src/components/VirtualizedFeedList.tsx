@@ -3,9 +3,8 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from 'react';
 import type { FeedItem } from '@/lib/api/types';
+import { FEED_CARD_GAP } from '@/lib/constants';
 import { FeedCard } from './FeedCard';
-
-const ITEM_GAP = 6;
 
 export function VirtualizedFeedList({
   items,
@@ -21,14 +20,14 @@ export function VirtualizedFeedList({
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 110,
-    gap: ITEM_GAP,
+    estimateSize: () => 120 + FEED_CARD_GAP,
+    gap: 0, // gap doesn't work with measureElement; we bake it into each item
     overscan: 8,
   });
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
@@ -68,6 +67,8 @@ export function VirtualizedFeedList({
                 left: 0,
                 width: '100%',
                 transform: `translateY(${virtualRow.start}px)`,
+                paddingBottom: FEED_CARD_GAP,
+                willChange: 'transform',
               }}
             >
               <FeedCard item={item} onClick={() => onItemClick(item)} />

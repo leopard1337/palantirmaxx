@@ -46,6 +46,10 @@ export const FeedCard = memo(function FeedCard({
             <img
               src={item.tweet.user.pfp}
               alt=""
+              width={16}
+              height={16}
+              loading="lazy"
+              decoding="async"
               className="h-4 w-4 rounded-full ring-1 ring-white/[0.08] shrink-0"
             />
           )}
@@ -71,15 +75,15 @@ export const FeedCard = memo(function FeedCard({
 
       <CardBody>
         {showTitle && (
-          <p className="text-[12px] font-medium leading-snug text-zinc-100 line-clamp-2 mb-0.5">
+          <p className="text-[12px] font-medium leading-snug text-zinc-100 line-clamp-2 mb-1">
             {title}
           </p>
         )}
-        <p className="text-[12px] leading-[1.55] text-zinc-200 line-clamp-3">
+        <p className="text-[12px] leading-[1.6] text-zinc-200 line-clamp-3">
           {body}
         </p>
         {(cats?.length || topics?.length) && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
             {cats?.map((c) => (
               <span
                 key={c}

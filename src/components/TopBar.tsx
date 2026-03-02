@@ -12,6 +12,7 @@ const nav: { href: string; label: string; exact?: boolean }[] = [
   { href: '/grid', label: 'Grid' },
   { href: '/events', label: 'Events' },
   { href: '/movers', label: 'Movers' },
+  { href: '/intel', label: 'Intel' },
   { href: '/globe', label: 'Globe' },
   { href: '/markets', label: 'Markets' },
 ];
@@ -61,7 +62,7 @@ export function TopBar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 shrink-0 ${
+              className={`relative rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
                 active
                   ? 'text-foreground font-medium'
                   : 'text-zinc-500 hover:text-zinc-200'
@@ -79,15 +80,13 @@ export function TopBar() {
       {/* Right: counters */}
       <div className="flex items-center gap-4 shrink-0">
         {feedCount > 0 && (
-          <span className="text-[10px] font-bold tracking-wide">
-            <span className="text-red-400">FEED</span>{' '}
-            <span className="text-red-500">({feedCount})</span>
+          <span className="text-[10px] font-medium tracking-wide text-zinc-400">
+            Feed <span className="text-zinc-200 tabular-nums">({feedCount})</span>
           </span>
         )}
         {flightCount > 0 && (
-          <span className="text-[10px] font-bold tracking-wide">
-            <span className="text-red-400">FLIGHTS</span>{' '}
-            <span className="text-red-500">({flightCount})</span>
+          <span className="text-[10px] font-medium tracking-wide text-zinc-400">
+            Flights <span className="text-zinc-200 tabular-nums">({flightCount})</span>
           </span>
         )}
       </div>

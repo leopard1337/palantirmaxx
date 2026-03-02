@@ -1,6 +1,6 @@
 export function FeedListSkeleton() {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-3">
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}

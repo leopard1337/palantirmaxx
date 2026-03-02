@@ -1,5 +1,8 @@
 export const ACCENT = '#00ffa3';
 
+/** Feed card spacing - used by VirtualizedFeedList, Grid, FeedListSkeleton */
+export const FEED_CARD_GAP = 12; // px
+
 export const CAT_COLORS: Record<string, string> = {
   AWACS: '#ff6b6b',
   Drone: '#ffa94d',

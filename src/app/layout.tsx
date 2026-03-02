@@ -8,6 +8,7 @@ const jetbrains = JetBrains_Mono({
   variable: '--font-jetbrains',
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {

@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  // Optimize client bundle
+  experimental: {
+    optimizePackageImports: ['@tanstack/react-virtual', '@tanstack/react-query'],
+  },
 };
 
 export default nextConfig;

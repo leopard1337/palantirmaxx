@@ -16,7 +16,7 @@ export function ShortcutHelp({
       onClick={onClose}
     >
       <div
-        className="max-w-sm rounded-lg border border-zinc-700 bg-zinc-900 p-4 shadow-xl"
+        className="max-w-sm rounded-lg border border-white/[0.08] bg-surface p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="shortcut-help-title" className="mb-3 text-sm font-semibold text-zinc-200">
@@ -43,7 +43,7 @@ export function ShortcutHelp({
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 w-full rounded bg-white/[0.06] py-1.5 text-sm text-zinc-200 hover:bg-white/[0.1]"
+          className="mt-4 w-full rounded bg-white/[0.06] py-1.5 text-sm text-zinc-200 hover:bg-white/[0.1] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
         >
           Close
         </button>

@@ -66,7 +66,7 @@ function GridColumn({
         </span>
       </div>
       <div className="flex-1 overflow-y-auto p-2">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3">
           {items.map((item) => (
             <FeedCard
               key={item.id}

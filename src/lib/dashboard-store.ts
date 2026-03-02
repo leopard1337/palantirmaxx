@@ -7,12 +7,22 @@ export type WidgetType =
   | 'feed-news'
   | 'feed-tweet'
   | 'feed-telegram'
+  | 'camera-feed-all'
+  | 'camera-feed-iran'
+  | 'camera-feed-israel'
+  | 'camera-feed-jerusalem'
+  | 'camera-feed-middle-east'
+  | 'camera-feed' // legacy, maps to camera-feed-all
   | 'events'
   | 'markets'
   | 'movers'
   | 'globe'
   | 'embed-polymarket'
-  | 'embed-liveuamap';
+  | 'embed-liveuamap'
+  | 'intel-crypto'
+  | 'intel-economic'
+  | 'intel-disasters'
+  | 'intel-energy';
 
 export interface PanelConfig {
   id: string;
@@ -85,6 +95,15 @@ export const WIDGET_CATALOG: {
   { type: 'markets', label: 'Markets', group: 'Data', description: 'Active market contracts' },
   { type: 'movers', label: 'Top Movers', group: 'Data', description: 'Highest market-impact signals' },
   { type: 'globe', label: 'Flight Tracker', group: 'Visual', description: 'Live flight tracking list' },
+  { type: 'camera-feed-all', label: 'Camera Feed (All)', group: 'Camera', description: 'All 4 live streams' },
+  { type: 'camera-feed-iran', label: 'Camera Feed (Iran)', group: 'Camera', description: 'Tehran & Isfahan' },
+  { type: 'camera-feed-israel', label: 'Camera Feed (Israel)', group: 'Camera', description: 'Tel Aviv & Region' },
+  { type: 'camera-feed-jerusalem', label: 'Camera Feed (Jerusalem)', group: 'Camera', description: 'Jerusalem' },
+  { type: 'camera-feed-middle-east', label: 'Camera Feed (Middle East)', group: 'Camera', description: 'Iran, Israel, Qatar' },
   { type: 'embed-polymarket', label: 'Polymarket', group: 'Embed', description: 'Polymarket live embed' },
   { type: 'embed-liveuamap', label: 'Conflict Map', group: 'Embed', description: 'Live conflict awareness map' },
+  { type: 'intel-crypto', label: 'Crypto & Stablecoins', group: 'Intel', description: 'Crypto quotes & stablecoin peg status' },
+  { type: 'intel-economic', label: 'Economic Indicators', group: 'Intel', description: 'FRED: UNRATE, VIX, 10Y, Fed Funds, CPI' },
+  { type: 'intel-disasters', label: 'Disasters & Weather', group: 'Intel', description: 'Earthquakes, GDACS, weather alerts' },
+  { type: 'intel-energy', label: 'Energy Prices', group: 'Intel', description: 'Commodity energy prices' },
 ];

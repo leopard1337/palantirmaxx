@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { fetchFeed } from '@/lib/api/feed';
 import type { FeedItem } from '@/lib/api/types';
+import { CameraFeedGrid } from '@/components/CameraFeed';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { FeedListSkeleton } from '@/components/LoadingSkeleton';
 import { ShortcutHelp } from '@/components/ShortcutHelp';
@@ -17,7 +18,7 @@ import {
 } from '@/lib/constants';
 import { getItemSeverity, itemMatchesTopic } from '@/lib/utils';
 
-const FEED_TYPES = ['all', 'news', 'tweet', 'telegram'] as const;
+const FEED_TYPES = ['all', 'news', 'tweet', 'telegram', 'camera'] as const;
 type FeedTypeFilter = (typeof FEED_TYPES)[number];
 const API_TYPES = ['news', 'tweet', 'telegram'] as const;
 const PAGE_SIZE = 20;
@@ -67,7 +68,7 @@ function FeedContent() {
     (severity ? 1 : 0) + (category ? 1 : 0) + (topic ? 1 : 0);
 
   const apiType =
-    type === 'all'
+    type === 'all' || type === 'camera'
       ? undefined
       : (API_TYPES as readonly string[]).includes(type)
         ? (type as 'news' | 'tweet' | 'telegram')
@@ -90,6 +91,7 @@ function FeedContent() {
       lastPage.items.length >= PAGE_SIZE
         ? allPages.length + 1
         : undefined,
+    enabled: type !== 'camera',
   });
 
   const rawItems = useMemo(() => {
@@ -158,72 +160,73 @@ function FeedContent() {
     setTopic(null);
   }, []);
 
-  const showList = !isLoading && !error && allItems.length > 0;
+  const showList = type !== 'camera' && !isLoading && !error && allItems.length > 0;
+  const showCamera = type === 'camera';
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
+      {/* Header - centered */}
       <div className="border-b border-white/[0.06] px-5 py-3.5 shrink-0">
-        <div className="flex items-center justify-between mb-2.5">
+        <div className="flex flex-col items-center text-center mb-3">
           <h1 className="text-[15px] font-semibold text-zinc-100">
             Live Feed
           </h1>
-          <div className="flex items-center gap-2">
-            {totalCount > 0 && (
-              <span className="text-[10px] tabular-nums text-zinc-400">
-                {totalCount.toLocaleString()} signals
-              </span>
-            )}
-          </div>
+          {totalCount > 0 && type !== 'camera' && (
+            <span className="text-[10px] tabular-nums text-zinc-500 mt-0.5">
+              {totalCount.toLocaleString()} signals
+            </span>
+          )}
         </div>
 
-        {/* Source type row + filter toggle */}
-        <div className="flex items-center gap-1.5">
-          <div className="flex flex-wrap gap-1">
+        {/* Source type pills - centered */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-wrap justify-center gap-1.5">
             {FEED_TYPES.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => updateType(t)}
-                className={`rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors ${
                   type === t
                     ? 'bg-white/[0.1] text-zinc-100'
                     : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200'
                 }`}
               >
-                {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
+                {t === 'all' ? 'All' : t === 'camera' ? 'Camera Feed' : t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors border ${
-                filtersOpen || activeFilterCount > 0
-                  ? 'bg-accent/10 text-accent border-accent/20'
-                  : 'bg-white/[0.04] text-zinc-400 border-transparent hover:bg-white/[0.08] hover:text-zinc-200'
-              }`}
-            >
-              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filters
-              {activeFilterCount > 0 && (
-                <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-black">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            <span className="text-[10px] text-zinc-500">
-              Press ? for shortcuts
-            </span>
-          </div>
+          {type !== 'camera' && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors border ${
+                  filtersOpen || activeFilterCount > 0
+                    ? 'bg-accent/10 text-accent border-accent/20'
+                    : 'bg-white/[0.04] text-zinc-400 border-transparent hover:bg-white/[0.08] hover:text-zinc-200'
+                }`}
+              >
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-black">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+              <span className="text-[10px] text-zinc-500">
+                Press ? for shortcuts
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Expandable filter panel */}
-        {filtersOpen && (
+        {type !== 'camera' && filtersOpen && (
           <div className="mt-3 space-y-2.5 animate-fade-in">
             {/* Severity */}
             <div>
@@ -292,7 +295,7 @@ function FeedContent() {
       </div>
 
       {/* Active filter chips (shown when panel is closed) */}
-      {!filtersOpen && activeFilterCount > 0 && (
+      {type !== 'camera' && !filtersOpen && activeFilterCount > 0 && (
         <div className="flex items-center gap-1.5 px-5 py-2 border-b border-white/[0.06] shrink-0 animate-fade-in">
           <span className="text-[9px] text-zinc-500 shrink-0">Active:</span>
           {severity && (
@@ -337,8 +340,15 @@ function FeedContent() {
         </div>
       )}
 
+      {/* Camera Feed */}
+      {showCamera && (
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <CameraFeedGrid />
+        </div>
+      )}
+
       {/* Content */}
-      {!showList && (
+      {!showList && !showCamera && (
         <div className="flex-1 overflow-y-auto p-4">
           {error && (
             <div className="mb-4 rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-red-300">
@@ -396,7 +406,7 @@ function FeedContent() {
             />
           </div>
           {hasNextPage && (
-            <div className="flex justify-center py-2 shrink-0">
+            <div className="flex justify-center pt-4 pb-2 shrink-0">
               <button
                 type="button"
                 onClick={() => fetchNextPage()}
