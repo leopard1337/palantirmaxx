@@ -14,6 +14,7 @@ import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
 import { SOURCE_STYLES } from '@/lib/constants';
 
 const impactColor: Record<string, string> = {
+  critical: 'text-red-500',
   high: 'text-red-400',
   medium: 'text-amber-400',
   low: 'text-zinc-500',
@@ -34,6 +35,8 @@ export const FeedCard = memo(function FeedCard({
   const topMarket = item.related_markets?.[0];
   const marketCount = item.related_markets?.length ?? 0;
   const showTitle = title && title !== body;
+  const cats = item.categories?.slice(0, 3);
+  const topics = item.topics?.slice(0, 2);
 
   return (
     <Card onClick={onClick} className="w-full">
@@ -75,6 +78,26 @@ export const FeedCard = memo(function FeedCard({
         <p className="text-[12px] leading-[1.55] text-zinc-200 line-clamp-3">
           {body}
         </p>
+        {(cats?.length || topics?.length) && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {cats?.map((c) => (
+              <span
+                key={c}
+                className="rounded bg-white/[0.06] px-1.5 py-[1px] text-[9px] text-zinc-400"
+              >
+                {c}
+              </span>
+            ))}
+            {topics?.map((t) => (
+              <span
+                key={t}
+                className="rounded bg-accent/10 px-1.5 py-[1px] text-[9px] text-accent/70"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
       </CardBody>
 
       {(marketCount > 0 || topMarket?.impact_level) && (

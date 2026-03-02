@@ -1,4 +1,5 @@
 import type { FeedItem } from './api/types';
+import type { TopicOption } from './constants';
 
 export function getFeedSourceType(item: FeedItem): 'tweet' | 'telegram' | 'news' {
   if (item.tweet) return 'tweet';
@@ -75,4 +76,19 @@ const countryFlags: Record<string, string> = {
 
 export function getCountryFlag(code: string): string {
   return countryFlags[code.toUpperCase()] ?? code;
+}
+
+export function getItemSeverity(item: FeedItem): string | null {
+  return item.related_markets?.[0]?.impact_level ?? null;
+}
+
+export function itemMatchesTopic(item: FeedItem, topic: TopicOption): boolean {
+  const itemTopics = item.topics;
+  if (!itemTopics || itemTopics.length === 0) return false;
+  return itemTopics.some((t) => {
+    const lower = t.toLowerCase();
+    return topic.keywords.some(
+      (kw) => lower.includes(kw) || kw.includes(lower),
+    );
+  });
 }

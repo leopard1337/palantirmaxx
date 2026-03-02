@@ -218,14 +218,32 @@ export function FeedDetailDrawer({
             </div>
           )}
 
-          {item.topics && item.topics.length > 0 && (
-            <div className="border-t border-white/[0.06] px-4 py-3">
-              <span className="text-[10px] text-zinc-500">Topics: </span>
-              {item.topics.map((t) => (
-                <span key={t} className="mr-2 text-[10px] text-zinc-400">
-                  {t}
-                </span>
-              ))}
+          {((item.topics && item.topics.length > 0) || (item.categories && item.categories.length > 0)) && (
+            <div className="border-t border-white/[0.06] px-4 py-3 space-y-2">
+              {item.categories && item.categories.length > 0 && (
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mr-2">Categories</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {item.categories.map((c) => (
+                      <span key={c} className="rounded bg-white/[0.06] px-2 py-0.5 text-[10px] text-zinc-300">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {item.topics && item.topics.length > 0 && (
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mr-2">Topics</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {item.topics.map((t) => (
+                      <span key={t} className="rounded bg-accent/10 px-2 py-0.5 text-[10px] text-accent/80">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
