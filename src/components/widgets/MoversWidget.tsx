@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { memo } from 'react';
 import { fetchMovers } from '@/lib/api/movers';
 import type { FeedItem, MoverEntry } from '@/lib/api/types';
-import { getFeedBody, getFeedTitle, formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo } from '@/lib/utils';
 
 const CompactMover = memo(function CompactMover({
   mover,
@@ -14,8 +14,6 @@ const CompactMover = memo(function CompactMover({
   onClick: () => void;
 }) {
   const fi = mover.feed_item;
-  const body = getFeedBody(fi) || '';
-  const title = getFeedTitle(fi);
   const topMkt = fi.related_markets?.[0];
   const change = topMkt?.highest_price_change ?? 0;
   const positive = change >= 0;
@@ -23,19 +21,17 @@ const CompactMover = memo(function CompactMover({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-2 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+      className="w-full text-left px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
     >
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <span className="text-[10px] font-bold text-zinc-400 w-4 text-right shrink-0">
-          #{mover.rank}
-        </span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-bold text-zinc-500 shrink-0">#{mover.rank}</span>
         {change !== 0 && (
-          <span className={`font-mono text-[10px] font-bold ${positive ? 'text-accent' : 'text-red-400'}`}>
+          <span className={`font-mono text-[10px] font-bold shrink-0 ${positive ? 'text-accent' : 'text-red-400'}`}>
             {positive ? '+' : ''}{(change * 100).toFixed(1)}%
           </span>
         )}
         {topMkt?.impact_level && (
-          <span className={`text-[8px] font-bold uppercase rounded px-1 py-[0.5px] ${
+          <span className={`text-[8px] font-bold uppercase rounded px-1 py-px ${
             topMkt.impact_level === 'high' || topMkt.impact_level === 'critical'
               ? 'bg-red-500/10 text-red-400'
               : topMkt.impact_level === 'medium'
@@ -45,17 +41,12 @@ const CompactMover = memo(function CompactMover({
             {topMkt.impact_level}
           </span>
         )}
-        <span className="ml-auto text-[10px] text-zinc-500 tabular-nums">
+        <span className="ml-auto text-[10px] text-zinc-600 tabular-nums shrink-0">
           {formatTimeAgo(fi.timestamp)}
         </span>
       </div>
-      {topMkt && (
-        <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 pl-6 mb-0.5">
-          {topMkt.question || topMkt.event_title}
-        </p>
-      )}
-      <p className="text-[10px] text-zinc-400 leading-snug line-clamp-1 pl-6">
-        {body || title}
+      <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 mt-0.5">
+        {topMkt?.question || topMkt?.event_title || 'Unknown market'}
       </p>
     </button>
   );
@@ -73,13 +64,9 @@ export function MoversWidget({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
-            style={{ animationDelay: `${i * 40}ms` }}
-          />
+      <div className="flex flex-col p-2 gap-px">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-[44px] animate-pulse rounded bg-white/[0.03]" style={{ animationDelay: `${i * 30}ms` }} />
         ))}
       </div>
     );

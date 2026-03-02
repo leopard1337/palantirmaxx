@@ -14,7 +14,7 @@ import {
 } from '@/lib/utils';
 import { SOURCE_DOT } from '@/lib/constants';
 
-const ITEM_GAP = 1;
+const ITEM_GAP = 0;
 
 const CompactItem = memo(function CompactItem({
   item,
@@ -24,8 +24,8 @@ const CompactItem = memo(function CompactItem({
   onClick: () => void;
 }) {
   const src = getFeedSourceType(item);
-  const title = getFeedTitle(item);
   const body = getFeedBody(item) || '';
+  const title = getFeedTitle(item);
   const displayText = body || title;
   const source = getFeedSourceLabel(item);
   const topMkt = item.related_markets?.[0];
@@ -33,32 +33,23 @@ const CompactItem = memo(function CompactItem({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-2 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+      className="w-full text-left px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
     >
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <span
-          className={`h-1.5 w-1.5 rounded-full shrink-0 ${SOURCE_DOT[src] ?? 'bg-zinc-500'}`}
-        />
-        <span className="text-[10px] text-zinc-400 truncate min-w-0">
-          {source}
-        </span>
-        <span className="ml-auto text-[10px] text-zinc-500 tabular-nums shrink-0">
+      <div className="flex items-center gap-1.5">
+        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${SOURCE_DOT[src] ?? 'bg-zinc-500'}`} />
+        <span className="text-[10px] text-zinc-400 truncate min-w-0">{source}</span>
+        {topMkt && (
+          <span className="text-[10px] text-accent font-mono font-medium shrink-0">
+            {Math.round(topMkt.yes_probability * 100)}%
+          </span>
+        )}
+        <span className="ml-auto text-[10px] text-zinc-600 tabular-nums shrink-0">
           {formatTimeAgo(item.timestamp)}
         </span>
       </div>
-      <p className="text-[11px] text-zinc-200 leading-snug line-clamp-2">
+      <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 mt-0.5">
         {displayText}
       </p>
-      {topMkt && (
-        <div className="mt-0.5 flex items-center gap-1.5 text-[10px]">
-          <span className="text-accent font-mono font-medium">
-            {Math.round(topMkt.yes_probability * 100)}%
-          </span>
-          <span className="text-zinc-500 truncate">
-            {topMkt.question || topMkt.event_title}
-          </span>
-        </div>
-      )}
     </button>
   );
 });
@@ -96,20 +87,16 @@ export function FeedWidget({
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 72,
+    estimateSize: () => 46,
     gap: ITEM_GAP,
-    overscan: 8,
+    overscan: 10,
   });
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
-            style={{ animationDelay: `${i * 40}ms` }}
-          />
+      <div className="flex flex-col p-2 gap-px">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-[44px] animate-pulse rounded bg-white/[0.03]" style={{ animationDelay: `${i * 30}ms` }} />
         ))}
       </div>
     );
@@ -124,17 +111,8 @@ export function FeedWidget({
   }
 
   return (
-    <div
-      ref={parentRef}
-      className="absolute inset-0 overflow-y-auto"
-    >
-      <div
-        style={{
-          height: virtualizer.getTotalSize(),
-          position: 'relative',
-          width: '100%',
-        }}
-      >
+    <div ref={parentRef} className="absolute inset-0 overflow-y-auto">
+      <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
         {virtualizer.getVirtualItems().map((row) => {
           const item = items[row.index];
           return (
@@ -142,18 +120,9 @@ export function FeedWidget({
               key={item.id}
               data-index={row.index}
               ref={virtualizer.measureElement}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${row.start}px)`,
-              }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${row.start}px)` }}
             >
-              <CompactItem
-                item={item}
-                onClick={() => onSelectItem?.(item)}
-              />
+              <CompactItem item={item} onClick={() => onSelectItem?.(item)} />
             </div>
           );
         })}

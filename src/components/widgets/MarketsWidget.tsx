@@ -16,33 +16,24 @@ const CompactMarket = memo(function CompactMarket({
       href={`https://polymarket.com/event/${market.slug}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
     >
-      {market.image && (
-        <img
-          src={market.image}
-          alt=""
-          className="h-7 w-7 rounded object-cover shrink-0"
-        />
-      )}
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-zinc-200 leading-snug line-clamp-2">
-          {market.question || market.title}
-        </p>
-        <div className="mt-0.5 flex items-center gap-2 text-[10px]">
-          <span className="text-accent font-mono">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-accent font-mono font-medium shrink-0">
             {formatProbability(market.yes_probability)}
           </span>
-          <span className="text-zinc-400">{formatVolume(market.volume)}</span>
+          <span className="text-[10px] text-zinc-500">{formatVolume(market.volume)}</span>
+          <div className="w-8 h-1 rounded-full bg-white/[0.06] overflow-hidden shrink-0 ml-auto">
+            <div
+              className="h-full bg-accent/30 rounded-full"
+              style={{ width: `${Math.round(market.yes_probability * 100)}%` }}
+            />
+          </div>
         </div>
-      </div>
-      <div className="w-10 h-1.5 rounded-full bg-white/[0.06] overflow-hidden shrink-0">
-        <div
-          className="h-full bg-accent/30 rounded-full"
-          style={{
-            width: `${Math.round(market.yes_probability * 100)}%`,
-          }}
-        />
+        <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 mt-0.5">
+          {market.question || market.title}
+        </p>
       </div>
     </a>
   );
@@ -65,13 +56,9 @@ export function MarketsWidget() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
-            style={{ animationDelay: `${i * 40}ms` }}
-          />
+      <div className="flex flex-col p-2 gap-px">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-[44px] animate-pulse rounded bg-white/[0.03]" style={{ animationDelay: `${i * 30}ms` }} />
         ))}
       </div>
     );

@@ -13,26 +13,21 @@ const CompactFlight = memo(function CompactFlight({
 }) {
   const color = CAT_COLORS[flight.category] ?? CAT_COLORS.Other;
   return (
-    <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors">
-      <span
-        className="h-1.5 w-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: color }}
-      />
+    <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-[11px] text-zinc-200 truncate">
+          <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+          <span className="text-[10px] font-bold text-zinc-200 truncate">
             {flight.callsign || flight.hex}
           </span>
-          <span className="text-[10px] text-zinc-500 truncate">
-            {flight.aircraft}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-[10px]">
-          <span className="text-zinc-400 truncate">{flight.location}</span>
-          <span className="ml-auto text-zinc-500 font-mono shrink-0">
+          <span className="text-[10px] text-zinc-500 truncate">{flight.aircraft}</span>
+          <span className="ml-auto text-[10px] text-zinc-600 font-mono shrink-0">
             {flight.altitude.feet.toLocaleString()} ft
           </span>
         </div>
+        <p className="text-[11px] text-zinc-400 leading-snug line-clamp-1 mt-0.5">
+          {flight.location} &middot; {flight.speed.knots} kts &middot; {flight.category}
+        </p>
       </div>
     </div>
   );
@@ -53,13 +48,9 @@ export function FlightGlobeWidget() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
-            style={{ animationDelay: `${i * 40}ms` }}
-          />
+      <div className="flex flex-col p-2 gap-px">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-[44px] animate-pulse rounded bg-white/[0.03]" style={{ animationDelay: `${i * 30}ms` }} />
         ))}
       </div>
     );

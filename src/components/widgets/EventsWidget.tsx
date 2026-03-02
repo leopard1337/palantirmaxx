@@ -17,38 +17,24 @@ const CompactEvent = memo(function CompactEvent({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-2 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+      className="w-full text-left px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
     >
-      <div className="flex items-start gap-2">
-        {event.image && (
-          <img
-            src={event.image}
-            alt=""
-            className="h-7 w-7 rounded object-cover shrink-0 mt-0.5"
-          />
+      <div className="flex items-center gap-1.5">
+        {top && (
+          <span className="text-[10px] text-accent font-mono font-medium shrink-0">
+            {formatProbability(top.yes_probability)}
+          </span>
         )}
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-medium text-zinc-200 leading-snug line-clamp-2">
-            {event.title}
-          </p>
-          <div className="mt-0.5 flex items-center gap-2 text-[10px]">
-            {top && (
-              <span className="text-accent font-mono">
-                {formatProbability(top.yes_probability)}
-              </span>
-            )}
-            {event.volume > 0 && (
-              <span className="text-zinc-400">
-                {formatVolume(event.volume)}
-              </span>
-            )}
-            <span className="text-zinc-500">
-              {event.markets?.length ?? 0} mkt
-              {(event.markets?.length ?? 0) !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
+        {event.volume > 0 && (
+          <span className="text-[10px] text-zinc-500">{formatVolume(event.volume)}</span>
+        )}
+        <span className="text-[10px] text-zinc-600 ml-auto shrink-0">
+          {event.markets?.length ?? 0} mkt{(event.markets?.length ?? 0) !== 1 ? 's' : ''}
+        </span>
       </div>
+      <p className="text-[11px] font-medium text-zinc-200 leading-snug line-clamp-1 mt-0.5">
+        {event.title}
+      </p>
     </button>
   );
 });
@@ -65,13 +51,9 @@ export function EventsWidget({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
-            style={{ animationDelay: `${i * 40}ms` }}
-          />
+      <div className="flex flex-col p-2 gap-px">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-[44px] animate-pulse rounded bg-white/[0.03]" style={{ animationDelay: `${i * 30}ms` }} />
         ))}
       </div>
     );
@@ -90,11 +72,7 @@ export function EventsWidget({
     <div className="absolute inset-0 overflow-y-auto">
       <div className="flex flex-col">
         {events.map((ev) => (
-          <CompactEvent
-            key={ev.id}
-            event={ev}
-            onClick={() => onSelectEvent?.(ev)}
-          />
+          <CompactEvent key={ev.id} event={ev} onClick={() => onSelectEvent?.(ev)} />
         ))}
       </div>
     </div>
