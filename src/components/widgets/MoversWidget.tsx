@@ -4,8 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { memo } from 'react';
 import { fetchMovers } from '@/lib/api/movers';
 import type { FeedItem, MoverEntry } from '@/lib/api/types';
-import { getFeedBody, getFeedTitle, getFeedSourceType, formatTimeAgo } from '@/lib/utils';
-import { SOURCE_DOT } from '@/lib/constants';
+import { getFeedBody, getFeedTitle, formatTimeAgo } from '@/lib/utils';
 
 const CompactMover = memo(function CompactMover({
   mover,
@@ -15,11 +14,11 @@ const CompactMover = memo(function CompactMover({
   onClick: () => void;
 }) {
   const fi = mover.feed_item;
-  const src = getFeedSourceType(fi);
   const body = getFeedBody(fi) || '';
   const title = getFeedTitle(fi);
-  const displayText = body || title;
   const topMkt = fi.related_markets?.[0];
+  const change = topMkt?.highest_price_change ?? 0;
+  const positive = change >= 0;
 
   return (
     <button
@@ -30,19 +29,42 @@ const CompactMover = memo(function CompactMover({
         <span className="text-[10px] font-bold text-zinc-400 w-4 text-right shrink-0">
           #{mover.rank}
         </span>
-        <span
-          className={`h-1.5 w-1.5 rounded-full shrink-0 ${SOURCE_DOT[src] ?? 'bg-zinc-500'}`}
-        />
-        <span className="ml-auto text-[10px] text-zinc-500 tabular-nums">
+        {change !== 0 && (
+          <span className={`font-mono text-[10px] font-bold ${positive ? 'text-accent' : 'text-red-400'}`}>
+            {positive ? '+' : ''}{(change * 100).toFixed(1)}%
+          </span>
+        )}
+        {topMkt?.impact_level && (
+          <span className={`text-[8px] font-bold uppercase rounded px-1 py-[0.5px] ${
+            topMkt.impact_level === 'high' || topMkt.impact_level === 'critical'
+              ? 'bg-red-500/10 text-red-400'
+              : topMkt.impact_level === 'medium'
+                ? 'bg-amber-500/10 text-amber-400'
+                : 'bg-zinc-500/10 text-zinc-500'
+          }`}>
+            {topMkt.impact_level}
+          </span>
+        )}
+        <span className="ml-auto text-[9px] text-zinc-500 tabular-nums">
           {formatTimeAgo(fi.timestamp)}
         </span>
       </div>
-      <p className="text-[11px] text-zinc-200 leading-snug line-clamp-2 pl-6">
-        {displayText}
+      {topMkt && (
+        <p className="text-[10px] text-zinc-200 leading-snug line-clamp-1 pl-6 mb-0.5">
+          {topMkt.question || topMkt.event_title}
+        </p>
+      )}
+      <p className="text-[10px] text-zinc-400 leading-snug line-clamp-1 pl-6">
+        {body || title}
       </p>
-      {topMkt && topMkt.highest_price_change > 0 && (
-        <div className="mt-0.5 pl-6 text-[10px] text-accent font-mono">
-          +{(topMkt.highest_price_change * 100).toFixed(1)}% move
+      {topMkt && (
+        <div className="mt-0.5 pl-6 flex items-center gap-2 text-[9px]">
+          <span className="font-mono text-accent/70">
+            YES {Math.round(topMkt.yes_probability * 100)}\u00A2
+          </span>
+          <span className="font-mono text-red-400/50">
+            NO {Math.round(topMkt.no_probability * 100)}\u00A2
+          </span>
         </div>
       )}
     </button>
