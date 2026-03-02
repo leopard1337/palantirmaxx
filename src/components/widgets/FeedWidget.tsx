@@ -107,7 +107,7 @@ export function FeedWidget({
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-14 animate-pulse rounded bg-white/[0.02]"
+            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
             style={{ animationDelay: `${i * 40}ms` }}
           />
         ))}

@@ -66,10 +66,10 @@ export function EventsWidget({
   if (isLoading) {
     return (
       <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-12 animate-pulse rounded bg-white/[0.02]"
+            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
             style={{ animationDelay: `${i * 40}ms` }}
           />
         ))}

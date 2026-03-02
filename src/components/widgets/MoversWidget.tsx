@@ -25,7 +25,7 @@ const CompactMover = memo(function CompactMover({
       onClick={onClick}
       className="w-full text-left px-3 py-2 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
     >
-      <div className="flex items-center gap-2 mb-0.5">
+      <div className="flex items-center gap-1.5 mb-0.5">
         <span className="text-[10px] font-bold text-zinc-400 w-4 text-right shrink-0">
           #{mover.rank}
         </span>
@@ -45,28 +45,18 @@ const CompactMover = memo(function CompactMover({
             {topMkt.impact_level}
           </span>
         )}
-        <span className="ml-auto text-[9px] text-zinc-500 tabular-nums">
+        <span className="ml-auto text-[10px] text-zinc-500 tabular-nums">
           {formatTimeAgo(fi.timestamp)}
         </span>
       </div>
       {topMkt && (
-        <p className="text-[10px] text-zinc-200 leading-snug line-clamp-1 pl-6 mb-0.5">
+        <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 pl-6 mb-0.5">
           {topMkt.question || topMkt.event_title}
         </p>
       )}
       <p className="text-[10px] text-zinc-400 leading-snug line-clamp-1 pl-6">
         {body || title}
       </p>
-      {topMkt && (
-        <div className="mt-0.5 pl-6 flex items-center gap-2 text-[9px]">
-          <span className="font-mono text-accent/70">
-            YES {Math.round(topMkt.yes_probability * 100)}\u00A2
-          </span>
-          <span className="font-mono text-red-400/50">
-            NO {Math.round(topMkt.no_probability * 100)}\u00A2
-          </span>
-        </div>
-      )}
     </button>
   );
 });
@@ -84,10 +74,10 @@ export function MoversWidget({
   if (isLoading) {
     return (
       <div className="flex flex-col gap-px p-2">
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-14 animate-pulse rounded bg-white/[0.02]"
+            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
             style={{ animationDelay: `${i * 40}ms` }}
           />
         ))}

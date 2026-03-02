@@ -22,7 +22,7 @@ const CompactMarket = memo(function CompactMarket({
         <img
           src={market.image}
           alt=""
-          className="h-6 w-6 rounded object-cover shrink-0"
+          className="h-7 w-7 rounded object-cover shrink-0"
         />
       )}
       <div className="flex-1 min-w-0">
@@ -69,7 +69,7 @@ export function MarketsWidget() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-11 animate-pulse rounded bg-white/[0.02]"
+            className="h-[52px] animate-pulse rounded bg-white/[0.03]"
             style={{ animationDelay: `${i * 40}ms` }}
           />
         ))}
