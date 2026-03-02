@@ -1,0 +1,78 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { memo, useMemo } from 'react';
+import { fetchFlights } from '@/lib/api/flights';
+import type { FlightData } from '@/lib/api/types';
+import { CAT_COLORS } from '@/lib/constants';
+
+const CompactFlight = memo(function CompactFlight({
+  flight,
+}: {
+  flight: FlightData;
+}) {
+  const color = CAT_COLORS[flight.category] ?? CAT_COLORS.Other;
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-white/[0.04]">
+      <span
+        className="h-[6px] w-[6px] rounded-full shrink-0"
+        style={{ backgroundColor: color }}
+      />
+      <span className="font-bold text-[10px] text-zinc-200 truncate">
+        {flight.callsign || flight.hex}
+      </span>
+      <span className="text-[9px] text-zinc-500 truncate">
+        {flight.aircraft}
+      </span>
+      <span className="ml-auto text-[9px] text-zinc-500 font-mono shrink-0">
+        {flight.altitude.feet.toLocaleString()} ft
+      </span>
+    </div>
+  );
+});
+
+export function FlightGlobeWidget() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['flights', 'widget'],
+    queryFn: () => fetchFlights(30),
+    refetchInterval: 8_000,
+    staleTime: 8_000,
+  });
+
+  const flights = useMemo(
+    () => [...(data ?? [])].sort((a, b) => b.timestamp - a.timestamp),
+    [data],
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-px p-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-7 animate-pulse rounded bg-white/[0.02]"
+            style={{ animationDelay: `${i * 40}ms` }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (flights.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-[11px] text-zinc-500">
+        No flights
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 overflow-y-auto">
+      <div className="flex flex-col">
+        {flights.map((f) => (
+          <CompactFlight key={f.id} flight={f} />
+        ))}
+      </div>
+    </div>
+  );
+}
