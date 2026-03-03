@@ -17,8 +17,10 @@ export const CAMERA_SOURCES: CameraSource[] = [
   { id: 'middle-east', country: 'Middle East', slug: 'multi', embedId: '4E-iFtUM2kk', title: 'Iran, Israel, Qatar' },
 ];
 
+const YT_EMBED_PARAMS = 'autoplay=1&mute=1&controls=0&fs=0&modestbranding=1&rel=0&disablekb=1';
+
 function CameraEmbed({ source }: { source: CameraSource }) {
-  const url = `https://www.youtube.com/embed/${source.embedId}?autoplay=1&mute=1&controls=0&fs=0&modestbranding=1&rel=0&disablekb=1`;
+  const url = `https://www.youtube.com/embed/${source.embedId}?${YT_EMBED_PARAMS}`;
 
   return (
     <div className="relative w-full aspect-video bg-black">
@@ -31,7 +33,7 @@ function CameraEmbed({ source }: { source: CameraSource }) {
       />
     </div>
   );
-});
+}
 
 const CameraTile = memo(function CameraTile({
   source,
@@ -65,7 +67,7 @@ const CameraTile = memo(function CameraTile({
       </div>
     </button>
   );
-}
+});
 
 function CameraCard({ source, compact = false }: { source: CameraSource; compact?: boolean }) {
   const url = `https://www.youtube.com/embed/${source.embedId}?${YT_EMBED_PARAMS}`;
