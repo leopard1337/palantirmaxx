@@ -42,6 +42,34 @@ export function FeedDetailDrawer({
   const s = SOURCE_STYLES[sourceType] ?? SOURCE_STYLES.news;
   const showTitle = title && title !== body;
 
+  const sourceSection = (() => {
+    if (item.tweet) {
+      return {
+        label: 'Tweet',
+        sub: `@${item.tweet.user?.handle ?? 'unknown'}`,
+        linkText: 'View on X',
+        link: item.tweet.link ?? link,
+      };
+    }
+    if (item.news) {
+      return {
+        label: 'News',
+        sub: item.news.source ?? 'Unknown',
+        linkText: 'Read article',
+        link: item.news.url,
+      };
+    }
+    if (item.telegram) {
+      return {
+        label: 'Telegram',
+        sub: item.telegram.channel ?? 'Unknown channel',
+        linkText: 'Open in Telegram',
+        link: item.telegram.link,
+      };
+    }
+    return { label: 'Source', sub: sourceLabel, linkText: 'View source', link };
+  })();
+
   return (
     <>
       <div
@@ -51,21 +79,25 @@ export function FeedDetailDrawer({
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-white/[0.06] bg-surface shadow-2xl animate-slide-in">
         <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            {item.tweet?.user.pfp && (
+            {item.tweet?.user.pfp ? (
               <img
                 src={item.tweet.user.pfp}
                 alt=""
-                className="h-6 w-6 rounded-full ring-1 ring-white/[0.08]"
+                className="h-6 w-6 rounded-full ring-1 ring-white/[0.08] shrink-0"
               />
-            )}
-            <div>
-              <span
-                className={`text-[11px] font-semibold ${s.text}`}
+            ) : (
+              <div
+                className={`h-6 w-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold ${s.text} bg-white/[0.06]`}
               >
-                {sourceType.toUpperCase()}
+                {sourceType === 'tweet' ? '𝕏' : sourceType === 'telegram' ? 'TG' : '◇'}
+              </div>
+            )}
+            <div className="min-w-0">
+              <span className={`text-[11px] font-semibold ${s.text}`}>
+                {sourceSection.label.toUpperCase()}
               </span>
-              <span className="ml-2 text-[10px] text-zinc-400">
-                {sourceLabel}
+              <span className="ml-2 text-[10px] text-zinc-400 truncate block">
+                {sourceSection.sub}
               </span>
             </div>
           </div>
@@ -97,7 +129,26 @@ export function FeedDetailDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="border-b border-white/[0.06] px-4 py-4">
+          <div className="border-b border-white/[0.06] px-4 py-3">
+            <div className="mb-3 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Source</span>
+              <p className="text-[12px] font-medium text-zinc-200 mt-0.5">
+                {sourceSection.label} from {sourceSection.sub}
+              </p>
+              {sourceSection.link && (
+                <a
+                  href={sourceSection.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-accent hover:text-accent/80"
+                >
+                  {sourceSection.linkText}
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              )}
+            </div>
             {item.countries && item.countries.length > 0 && (
               <div className="mb-2 flex items-center gap-1.5 text-[11px]">
                 {item.countries.map((c) => (
@@ -122,26 +173,16 @@ export function FeedDetailDrawer({
                 No additional content available.
               </p>
             )}
-            {link && (
+            {sourceSection.link && (
               <a
-                href={link}
+                href={sourceSection.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+                className="mt-3 inline-flex items-center gap-1 text-[11px] text-accent hover:text-accent/80"
               >
-                View source
-                <svg
-                  className="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
+                {sourceSection.linkText}
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
               </a>
             )}

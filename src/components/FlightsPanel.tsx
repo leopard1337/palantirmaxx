@@ -75,10 +75,12 @@ export function FlightsPanel({
   flights,
   selectedFlight,
   onSelectFlight,
+  embedded,
 }: {
   flights: FlightData[];
   selectedFlight: FlightData | null;
   onSelectFlight: (flight: FlightData) => void;
+  embedded?: boolean;
 }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
@@ -101,7 +103,13 @@ export function FlightsPanel({
   }, [flights, category, search]);
 
   return (
-    <div className="flex h-full w-72 shrink-0 flex-col border-l border-white/[0.06] bg-background">
+    <div
+      className={`flex h-full flex-col ${
+        embedded
+          ? 'w-full'
+          : 'w-72 shrink-0 border-l border-white/[0.06] bg-background'
+      }`}
+    >
       <div className="border-b border-white/[0.06] px-3 py-2.5 shrink-0 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">

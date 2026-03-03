@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FlightData, CountryFeedData } from '@/lib/api/types';
 import { CAT_COLORS } from '@/lib/constants';
-import { formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo, getFeedBody } from '@/lib/utils';
+import { getCountryCentroid, buildCentroidMap } from '@/lib/country-centroids';
 
 const Globe = dynamic(() => import('react-globe.gl'), {
   ssr: false,
@@ -22,7 +23,19 @@ interface FlightPoint {
   alt: number;
   radius: number;
   color: string;
+  _type: 'flight';
   _src: FlightData;
+}
+
+interface MentionPoint {
+  id: string;
+  lat: number;
+  lng: number;
+  alt: number;
+  radius: number;
+  color: string;
+  _type: 'mention';
+  _src: { country: string; count: number; tweet: string; ts: string };
 }
 
 const INIT_POV = { lat: 30, lng: 45, altitude: 2.2 };
@@ -65,6 +78,8 @@ export const GlintGlobe = memo(function GlintGlobe({
 }) {
   const globeRef = useRef<any>(null);
   const [hovered, setHovered] = useState<FlightData | null>(null);
+  const [hoveredMention, setHoveredMention] = useState<MentionPoint['_src'] | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [dims, setDims] = useState({ w: 800, h: 600 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +102,12 @@ export const GlintGlobe = memo(function GlintGlobe({
 
   const activity = useMemo(() => {
     const m = new Map<string, number>();
-    for (const c of countryFeed) m.set(c.country, c.count);
+    const feed = Array.isArray(countryFeed) ? countryFeed : [];
+    for (const c of feed) {
+      const country = (c as any).country ?? (c as any).country_code ?? (c as any).name ?? '';
+      const count = typeof (c as any).count === 'number' ? (c as any).count : 0;
+      if (country) m.set(country, count);
+    }
     return m;
   }, [countryFeed]);
 
@@ -97,38 +117,79 @@ export const GlintGlobe = memo(function GlintGlobe({
     return feats.filter((f: any) => f.properties?.ISO_A2 !== 'AQ');
   }, [geoJson]);
 
+  const centroidMap = useMemo(() => {
+    const feats = (geoJson as any)?.features;
+    return feats ? buildCentroidMap(feats) : null;
+  }, [geoJson]);
+
   useEffect(() => {
     if (!selectedFlight || !globeRef.current) return;
+    const lat = selectedFlight.position?.lat;
+    const lng = selectedFlight.position?.lon;
+    if (lat == null || lng == null) return;
     globeRef.current.pointOfView(
-      {
-        lat: selectedFlight.position.lat,
-        lng: selectedFlight.position.lon,
-        altitude: 1.5,
-      },
+      { lat, lng, altitude: 1.5 },
       800,
     );
   }, [selectedFlight]);
 
-  const points: FlightPoint[] = useMemo(
+  const flightPoints: FlightPoint[] = useMemo(
     () =>
-      flights.map((f) => {
-        const norm = Math.max(0.25, Math.min(1, f.altitude.feet / 35000));
-        return {
-          id: f.id,
-          lat: f.position.lat,
-          lng: f.position.lon,
+      flights
+        .filter((f) => f?.position?.lat != null && f?.position?.lon != null && f?.id)
+        .map((f) => {
+          const feet = f.altitude?.feet ?? 0;
+          const norm = Math.max(0.25, Math.min(1, feet / 35000));
+          return {
+            id: `flight-${f.id}`,
+            lat: f.position.lat,
+            lng: f.position.lon,
           alt: norm * 0.018,
           radius: norm * 0.3 + 0.15,
           color: CAT_COLORS[f.category] ?? CAT_COLORS.Other,
+          _type: 'flight' as const,
           _src: f,
         };
       }),
     [flights],
   );
 
+  const mentionPoints: MentionPoint[] = useMemo(() => {
+    const out: MentionPoint[] = [];
+    const feed = Array.isArray(countryFeed) ? countryFeed : [];
+    for (const c of feed) {
+      const country = (c as any).country ?? (c as any).country_code ?? (c as any).name ?? '';
+      const count = typeof (c as any).count === 'number' ? (c as any).count : 0;
+      const recent = (c as any).recent ?? (c as any).items ?? (c as any).feed ?? [];
+      if (count <= 0 || !country) continue;
+      const centroid = getCountryCentroid(country, centroidMap);
+      if (!centroid) continue;
+      const top = Array.isArray(recent) ? recent[0] : null;
+      const body = top ? getFeedBody(top) || '' : '';
+      const tweet = body ? body.slice(0, 120) + (body.length > 120 ? '…' : '') : '—';
+      const ts = top ? formatTimeAgo(top.timestamp) : '—';
+      out.push({
+        id: `mention-${String(country).replace(/\W/g, '_')}`,
+        lat: centroid[0],
+        lng: centroid[1],
+        alt: 0.02,
+        radius: Math.min(0.5, 0.2 + Math.log10(count + 1) * 0.08),
+        color: count > 50 ? '#ff4d4d' : count > 10 ? '#ff7a4d' : '#ffa94d',
+        _type: 'mention',
+        _src: { country, count, tweet, ts },
+      });
+    }
+    return out;
+  }, [countryFeed, centroidMap]);
+
+  const points: (FlightPoint | MentionPoint)[] = useMemo(
+    () => [...flightPoints, ...mentionPoints],
+    [flightPoints, mentionPoints],
+  );
+
   const capColor = useCallback(
     (feat: any) => {
-      const n = activity.get(feat.properties?.ISO_A2) ?? 0;
+      const n = activity.get(feat.properties?.ADMIN) ?? activity.get(feat.properties?.ISO_A2) ?? 0;
       if (n > 100) return 'rgba(255,70,40,0.35)';
       if (n > 50) return 'rgba(255,100,50,0.25)';
       if (n > 10) return 'rgba(255,140,80,0.15)';
@@ -144,12 +205,30 @@ export const GlintGlobe = memo(function GlintGlobe({
   const noop = useCallback(() => {}, []);
 
   const onHover = useCallback((pt: any) => {
-    setHovered(pt?._src ?? null);
+    if (!pt) {
+      setHovered(null);
+      setHoveredMention(null);
+      return;
+    }
+    if (pt._type === 'mention') {
+      setHovered(null);
+      setHoveredMention(pt._src);
+      return;
+    }
+    setHoveredMention(null);
+    setHovered(pt._type === 'flight' ? pt._src : null);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => setTooltipPos({ x: e.clientX, y: e.clientY });
+    window.addEventListener('mousemove', onMove);
+    return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
   const onClick = useCallback(
     (pt: any) => {
-      if (pt?._src) onFlightClick(pt._src);
+      if (!pt || pt._type !== 'flight') return;
+      onFlightClick(pt._src);
     },
     [onFlightClick],
   );
@@ -185,7 +264,22 @@ export const GlintGlobe = memo(function GlintGlobe({
         onPointClick={onClick}
       />
 
-      {hovered && (
+      {hoveredMention && (
+        <div
+          className="fixed z-[9999] max-w-[360px] rounded-xl border border-zinc-700/40 bg-[rgba(10,10,10,0.92)] p-3 shadow-2xl animate-fade-in pointer-events-none"
+          style={{ left: tooltipPos.x + 12, top: tooltipPos.y + 12 }}
+        >
+          <div className="text-[13px] leading-[1.3] text-zinc-100">
+            <div className="font-bold">{hoveredMention.country}</div>
+            <div className="mt-1 text-zinc-300 line-clamp-3">{hoveredMention.tweet}</div>
+            <div className="mt-1.5 text-[12px] text-zinc-500 opacity-75">
+              {hoveredMention.count} mentions · {hoveredMention.ts}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {hovered && (hovered.callsign != null || hovered.hex != null) && (
         <div className="absolute bottom-4 left-4 z-30 w-72 rounded-xl border border-zinc-700/40 bg-zinc-900/95 backdrop-blur-md p-3.5 shadow-2xl animate-fade-in pointer-events-none">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[13px] font-bold text-zinc-100 tracking-tight">
@@ -204,23 +298,23 @@ export const GlintGlobe = memo(function GlintGlobe({
           <div className="text-[10px] space-y-1">
             <TooltipRow
               label="Aircraft"
-              value={`${hovered.aircraft} (${hovered.registration})`}
+              value={`${hovered.aircraft ?? '—'} (${hovered.registration ?? '—'})`}
             />
-            <TooltipRow label="Origin" value={hovered.origin} />
-            <TooltipRow label="Location" value={hovered.location} truncate />
+            <TooltipRow label="Origin" value={hovered.origin ?? '—'} />
+            <TooltipRow label="Location" value={hovered.location ?? '—'} truncate />
             <TooltipRow
               label="Altitude"
-              value={`${hovered.altitude.feet.toLocaleString()} ft`}
+              value={`${(hovered.altitude?.feet ?? 0).toLocaleString()} ft`}
               mono
             />
             <TooltipRow
               label="Speed"
-              value={`${hovered.speed.knots.toFixed(0)} kts`}
+              value={`${(hovered.speed?.knots ?? 0).toFixed(0)} kts`}
               mono
             />
             <TooltipRow
               label="Last seen"
-              value={formatTimeAgo(hovered.timestamp)}
+              value={formatTimeAgo(hovered.timestamp ?? 0)}
             />
           </div>
         </div>

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { fetchFeed } from '@/lib/api/feed';
 import type { FeedItem } from '@/lib/api/types';
-import { CameraFeedGrid } from '@/components/CameraFeed';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { FeedListSkeleton } from '@/components/LoadingSkeleton';
 import { ShortcutHelp } from '@/components/ShortcutHelp';
@@ -18,7 +17,7 @@ import {
 } from '@/lib/constants';
 import { getItemSeverity, itemMatchesTopic } from '@/lib/utils';
 
-const FEED_TYPES = ['all', 'news', 'tweet', 'telegram', 'camera'] as const;
+const FEED_TYPES = ['all', 'news', 'tweet', 'telegram'] as const;
 type FeedTypeFilter = (typeof FEED_TYPES)[number];
 const API_TYPES = ['news', 'tweet', 'telegram'] as const;
 const PAGE_SIZE = 20;
@@ -91,7 +90,6 @@ function FeedContent() {
       lastPage.items.length >= PAGE_SIZE
         ? allPages.length + 1
         : undefined,
-    enabled: type !== 'camera',
   });
 
   const rawItems = useMemo(() => {
@@ -160,8 +158,7 @@ function FeedContent() {
     setTopic(null);
   }, []);
 
-  const showList = type !== 'camera' && !isLoading && !error && allItems.length > 0;
-  const showCamera = type === 'camera';
+  const showList = !isLoading && !error && allItems.length > 0;
 
   return (
     <div className="flex h-full flex-col">
@@ -171,7 +168,7 @@ function FeedContent() {
           <h1 className="text-[15px] font-semibold text-zinc-100">
             Live Feed
           </h1>
-          {totalCount > 0 && type !== 'camera' && (
+          {totalCount > 0 && (
             <span className="text-[10px] tabular-nums text-zinc-500 mt-0.5">
               {totalCount.toLocaleString()} signals
             </span>
@@ -186,7 +183,7 @@ function FeedContent() {
                 key={t}
                 type="button"
                 onClick={() => updateType(t)}
-                className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all duration-150 active:scale-[0.98] ${
                   type === t
                     ? 'bg-white/[0.1] text-zinc-100'
                     : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200'
@@ -197,8 +194,7 @@ function FeedContent() {
             ))}
           </div>
 
-          {type !== 'camera' && (
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setFiltersOpen(!filtersOpen)}
@@ -222,11 +218,10 @@ function FeedContent() {
                 Press ? for shortcuts
               </span>
             </div>
-          )}
         </div>
 
         {/* Expandable filter panel */}
-        {type !== 'camera' && filtersOpen && (
+        {filtersOpen && (
           <div className="mt-3 space-y-2.5 animate-fade-in">
             {/* Severity */}
             <div>
@@ -340,15 +335,8 @@ function FeedContent() {
         </div>
       )}
 
-      {/* Camera Feed */}
-      {showCamera && (
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <CameraFeedGrid />
-        </div>
-      )}
-
       {/* Content */}
-      {!showList && !showCamera && (
+      {!showList && (
         <div className="flex-1 overflow-y-auto p-4">
           {error && (
             <div className="mb-4 rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-red-300">
@@ -411,7 +399,7 @@ function FeedContent() {
                 type="button"
                 onClick={() => fetchNextPage()}
                 disabled={isFetching}
-                className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-[11px] font-medium text-zinc-300 hover:bg-white/[0.08] disabled:opacity-50"
+                className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-[11px] font-medium text-zinc-300 hover:bg-white/[0.08] active:scale-[0.98] disabled:opacity-50 transition-all duration-150"
               >
                 {isFetching ? 'Loading...' : 'Load more'}
               </button>
