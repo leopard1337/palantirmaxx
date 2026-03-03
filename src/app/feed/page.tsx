@@ -67,7 +67,7 @@ function FeedContent() {
     (severity ? 1 : 0) + (category ? 1 : 0) + (topic ? 1 : 0);
 
   const apiType =
-    type === 'all' || type === 'camera'
+    type === 'all'
       ? undefined
       : (API_TYPES as readonly string[]).includes(type)
         ? (type as 'news' | 'tweet' | 'telegram')
@@ -189,7 +189,7 @@ function FeedContent() {
                     : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200'
                 }`}
               >
-                {t === 'all' ? 'All' : t === 'camera' ? 'Camera Feed' : t.charAt(0).toUpperCase() + t.slice(1)}
+                {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
           </div>
@@ -290,7 +290,7 @@ function FeedContent() {
       </div>
 
       {/* Active filter chips (shown when panel is closed) */}
-      {type !== 'camera' && !filtersOpen && activeFilterCount > 0 && (
+      {!filtersOpen && activeFilterCount > 0 && (
         <div className="flex items-center gap-1.5 px-5 py-2 border-b border-white/[0.06] shrink-0 animate-fade-in">
           <span className="text-[9px] text-zinc-500 shrink-0">Active:</span>
           {severity && (
