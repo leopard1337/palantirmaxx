@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import Image from 'next/image';
 import type { FeedItem } from '@/lib/api/types';
 import {
   getFeedSourceType,
@@ -43,14 +44,13 @@ export const FeedCard = memo(function FeedCard({
       <CardHeader>
         <div className="flex items-center gap-1.5 min-w-0">
           {item.tweet?.user.pfp && (
-            <img
+            <Image
               src={item.tweet.user.pfp}
               alt=""
               width={16}
               height={16}
-              loading="lazy"
-              decoding="async"
               className="h-4 w-4 rounded-full ring-1 ring-white/[0.08] shrink-0"
+              unoptimized={item.tweet.user.pfp.startsWith('data:')}
             />
           )}
           <span

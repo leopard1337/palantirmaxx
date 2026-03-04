@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useWalkthrough } from '@/context/WalkthroughContext';
 import { fetchFeed } from '@/lib/api/feed';
 import { fetchFlights } from '@/lib/api/flights';
 
@@ -19,6 +20,13 @@ const nav: { href: string; label: string; exact?: boolean }[] = [
 
 export function TopBar() {
   const pathname = usePathname();
+  const walkthrough = useWalkthrough();
+  const queryClient = useQueryClient();
+
+  const prefetchRoute = (href: string) => {
+    if (href === '/feed') queryClient.prefetchQuery({ queryKey: ['feed', 'all'], queryFn: () => fetchFeed({ page: 1, count: 20 }) });
+    if (href === '/globe') queryClient.prefetchQuery({ queryKey: ['flights'], queryFn: () => fetchFlights(50) });
+  };
 
   const { data: feedData } = useQuery({
     queryKey: ['feed', 'topbar-count'],
@@ -62,6 +70,7 @@ export function TopBar() {
             <Link
               key={item.href}
               href={item.href}
+              onMouseEnter={() => prefetchRoute(item.href)}
               className={`relative rounded-md px-3 py-1.5 text-[13px] transition-all duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
                 active
                   ? 'text-foreground font-medium'
@@ -77,8 +86,18 @@ export function TopBar() {
         })}
       </nav>
 
-      {/* Right: counters */}
+      {/* Right: counters + replay tutorial (dev) */}
       <div className="flex items-center gap-4 shrink-0">
+        {walkthrough && (
+          <button
+            type="button"
+            onClick={walkthrough.replay}
+            className="rounded px-2 py-1 text-[10px] font-medium text-zinc-500 hover:text-accent hover:bg-accent/10 transition-colors"
+            title="Replay tutorial"
+          >
+            Replay tutorial
+          </button>
+        )}
         {feedCount > 0 && (
           <span className="text-[10px] font-medium tracking-wide text-zinc-400">
             Feed <span className="text-zinc-200 tabular-nums">({feedCount})</span>

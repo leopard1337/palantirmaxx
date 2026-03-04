@@ -1,10 +1,12 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 import { useState } from 'react';
 import { fetchEvents, CATEGORIES, type EventCategory } from '@/lib/api/events';
 import type { EventData, EventMarket } from '@/lib/api/types';
 import { formatVolume, formatProbability } from '@/lib/utils';
+import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 function MarketRow({
   market,
@@ -21,10 +23,13 @@ function MarketRow({
       className="flex items-center gap-3 rounded-lg border border-white/[0.08] bg-white/[0.03] p-3.5 transition-all hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998]"
     >
       {market.image && (
-        <img
+        <Image
           src={market.image}
           alt=""
+          width={36}
+          height={36}
           className="h-9 w-9 rounded-lg object-cover shrink-0 ring-1 ring-white/[0.08]"
+          unoptimized={market.image.startsWith('data:')}
         />
       )}
       <div className="flex-1 min-w-0">
@@ -125,19 +130,10 @@ export default function MarketsPage() {
 
       <div className="flex-1 overflow-y-auto p-4">
         {error && (
-          <div className="mb-4 rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-red-300">
-            <p className="text-[12px] font-medium">Error loading markets</p>
-            <p className="mt-1 text-[11px] text-red-400/70">
-              {String(error)}
-            </p>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="mt-3 rounded bg-red-900/40 px-3 py-1.5 text-[11px] hover:bg-red-900/60"
-            >
-              Retry
-            </button>
-          </div>
+          <QueryErrorBanner
+            message={`Error loading markets: ${String(error)}`}
+            onRetry={() => refetch()}
+          />
         )}
 
         {isLoading && (

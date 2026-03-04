@@ -17,8 +17,6 @@ export type WidgetType =
   | 'markets'
   | 'movers'
   | 'globe'
-  | 'embed-polymarket'
-  | 'embed-liveuamap'
   | 'intel-crypto'
   | 'intel-economic'
   | 'intel-disasters'
@@ -100,8 +98,6 @@ export const WIDGET_CATALOG: {
   { type: 'camera-feed-israel', label: 'Camera Feed (Israel)', group: 'Camera', description: 'Tel Aviv & Region' },
   { type: 'camera-feed-jerusalem', label: 'Camera Feed (Jerusalem)', group: 'Camera', description: 'Jerusalem' },
   { type: 'camera-feed-middle-east', label: 'Camera Feed (Middle East)', group: 'Camera', description: 'Iran, Israel, Qatar' },
-  { type: 'embed-polymarket', label: 'Polymarket', group: 'Embed', description: 'Polymarket live embed' },
-  { type: 'embed-liveuamap', label: 'Conflict Map', group: 'Embed', description: 'Live conflict awareness map' },
   { type: 'intel-crypto', label: 'Crypto & Stablecoins', group: 'Intel', description: 'Crypto quotes & stablecoin peg status' },
   { type: 'intel-economic', label: 'Economic Indicators', group: 'Intel', description: 'FRED: UNRATE, VIX, 10Y, Fed Funds, CPI' },
   { type: 'intel-disasters', label: 'Disasters & Weather', group: 'Intel', description: 'Earthquakes, GDACS, weather alerts' },

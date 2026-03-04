@@ -7,6 +7,7 @@ import type { FeedItem } from '@/lib/api/types';
 import { FeedCard } from '@/components/FeedCard';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { FeedListSkeleton } from '@/components/LoadingSkeleton';
+import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 const FEED_TYPES = ['all', 'news', 'tweet', 'telegram'] as const;
 
@@ -17,7 +18,7 @@ function GridColumn({
   type: (typeof FEED_TYPES)[number];
   onItemClick: (item: FeedItem) => void;
 }) {
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetching } =
+  const { data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetching } =
     useInfiniteQuery({
       queryKey: ['feed', 'grid', type],
       queryFn: ({ pageParam }) =>
@@ -29,6 +30,7 @@ function GridColumn({
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
         lastPage.items.length >= 15 ? allPages.length + 1 : undefined,
+      staleTime: 20_000,
     });
 
   const items = useMemo(() => {
@@ -43,14 +45,24 @@ function GridColumn({
       });
   }, [data]);
 
-  if (isLoading) return <FeedListSkeleton />;
-
   const typeLabels: Record<string, string> = {
     all: 'All',
     news: 'News',
     tweet: 'X / Twitter',
     telegram: 'Telegram',
   };
+
+  if (isLoading) return <FeedListSkeleton />;
+  if (error) {
+    return (
+      <div className="flex flex-col p-3 rounded-lg border border-white/[0.08] bg-white/[0.03]">
+        <QueryErrorBanner
+          message={`Failed to load ${typeLabels[type] ?? type} feed`}
+          onRetry={() => refetch()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.08] bg-white/[0.03] animate-fade-in">

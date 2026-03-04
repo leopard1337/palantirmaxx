@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState, useRef, useEffect } from 'react';
 import {
   type WidgetType,
@@ -7,17 +8,24 @@ import {
   WIDGET_CATALOG,
 } from '@/lib/dashboard-store';
 import type { FeedItem, EventData } from '@/lib/api/types';
-import { CameraFeedWidget } from './widgets/CameraFeedWidget';
 import { CryptoStablecoinWidget } from './widgets/CryptoStablecoinWidget';
 import { DisastersWeatherWidget } from './widgets/DisastersWeatherWidget';
 import { EconomicWidget } from './widgets/EconomicWidget';
-import { EmbedWidget } from './widgets/EmbedWidget';
 import { EnergyWidget } from './widgets/EnergyWidget';
 import { EventsWidget } from './widgets/EventsWidget';
 import { FeedWidget } from './widgets/FeedWidget';
-import { FlightGlobeWidget } from './widgets/FlightGlobeWidget';
 import { MarketsWidget } from './widgets/MarketsWidget';
 import { MoversWidget } from './widgets/MoversWidget';
+
+const FlightGlobeWidget = dynamic(
+  () => import('./widgets/FlightGlobeWidget').then((m) => ({ default: m.FlightGlobeWidget })),
+  { ssr: false, loading: () => <div className="flex h-full items-center justify-center"><div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-700 border-t-accent" /></div> }
+);
+
+const CameraFeedWidget = dynamic(
+  () => import('./widgets/CameraFeedWidget').then((m) => ({ default: m.CameraFeedWidget })),
+  { ssr: false, loading: () => <div className="flex h-full items-center justify-center"><div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-700 border-t-accent" /></div> }
+);
 
 function WidgetSelector({
   onSelect,
@@ -56,6 +64,7 @@ function WidgetSelector({
           </span>
           <button
             onClick={onClose}
+            aria-label="Close widget selector"
             className="rounded p-0.5 text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             <svg
@@ -139,10 +148,6 @@ function WidgetContent({
       return <MoversWidget onSelectItem={onSelectFeedItem} />;
     case 'globe':
       return <FlightGlobeWidget />;
-    case 'embed-polymarket':
-      return <EmbedWidget url="https://polymarket.com" title="Polymarket" />;
-    case 'embed-liveuamap':
-      return <EmbedWidget url="https://liveuamap.com" title="Conflict Map" />;
     case 'intel-crypto':
       return <CryptoStablecoinWidget />;
     case 'intel-economic':
@@ -247,6 +252,7 @@ export function WidgetPanel({
             onClick={() => onSetWidget(null)}
             className="rounded p-1 text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 transition-colors"
             title="Remove widget"
+            aria-label="Remove widget"
           >
             <svg
               className="h-3 w-3"

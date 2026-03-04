@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import Image from 'next/image';
 import type { EventData } from '@/lib/api/types';
 import { formatVolume, formatProbability } from '@/lib/utils';
 import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
@@ -20,10 +21,13 @@ export const EventCard = memo(function EventCard({
       <CardHeader>
         <div className="flex items-start gap-2.5 min-w-0">
           {event.image && (
-            <img
+            <Image
               src={event.image}
               alt=""
+              width={36}
+              height={36}
               className="h-9 w-9 rounded-lg object-cover shrink-0 ring-1 ring-white/[0.08]"
+              unoptimized={event.image.startsWith('data:')}
             />
           )}
           <h3 className="text-[12px] font-medium text-zinc-100 leading-snug line-clamp-2 flex-1 min-w-0">

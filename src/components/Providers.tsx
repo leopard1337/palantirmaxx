@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Component, useState, type ReactNode } from 'react';
+import { WalkthroughProvider } from '@/context/WalkthroughContext';
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -57,7 +58,9 @@ export function Providers({ children }: { children: ReactNode }) {
   );
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <WalkthroughProvider>{children}</WalkthroughProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { memo } from 'react';
+import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 import { fetchCryptoQuotes, fetchStablecoinMarkets } from '@/lib/api/intel';
 import type { CryptoQuote, StablecoinMarket } from '@/lib/api/intel-types';
 
@@ -45,13 +46,13 @@ const CompactStable = memo(function CompactStable({ s }: { s: StablecoinMarket }
 });
 
 export function CryptoStablecoinWidget() {
-  const { data: crypto } = useQuery({
+  const { data: crypto, error: cryptoError, refetch: refetchCrypto } = useQuery({
     queryKey: ['intel', 'crypto'],
     queryFn: () => fetchCryptoQuotes(['bitcoin', 'ethereum', 'solana']),
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
-  const { data: stable } = useQuery({
+  const { data: stable, error: stableError, refetch: refetchStable } = useQuery({
     queryKey: ['intel', 'stablecoins'],
     queryFn: () => fetchStablecoinMarkets(),
     staleTime: 30_000,
@@ -60,8 +61,8 @@ export function CryptoStablecoinWidget() {
 
   const quotes = crypto ?? [];
   const stablecoins = stable?.stablecoins ?? [];
-
-  const loading = !crypto && !stable;
+  const hasError = !!cryptoError || !!stableError;
+  const loading = !crypto && !stable && !hasError;
 
   if (loading) {
     return (
@@ -69,6 +70,20 @@ export function CryptoStablecoinWidget() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-[40px] animate-pulse rounded bg-white/[0.03]" />
         ))}
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="flex flex-col p-3">
+        <QueryErrorBanner
+          message="Failed to load crypto data"
+          onRetry={() => {
+            refetchCrypto();
+            refetchStable();
+          }}
+        />
       </div>
     );
   }
@@ -87,8 +102,8 @@ export function CryptoStablecoinWidget() {
       {quotes.length > 0 && (
         <div className="border-b border-white/[0.08]">
           <p className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-500">Crypto</p>
-          {quotes.map((q) => (
-            <CompactCrypto key={q.id ?? q.symbol ?? q.name ?? Math.random()} q={q} />
+          {quotes.map((q, i) => (
+            <CompactCrypto key={q.id ?? q.symbol ?? q.name ?? `crypto-${i}`} q={q} />
           ))}
         </div>
       )}

@@ -20,40 +20,47 @@ type TabId = (typeof TABS)[number];
 export default function IntelPage() {
   const [tab, setTab] = useState<TabId>('Markets');
 
-  const { data: crypto } = useQuery({
+  const { data: crypto, isLoading: cryptoLoading } = useQuery({
     queryKey: ['intel', 'crypto', 'page'],
     queryFn: () => fetchCryptoQuotes(['bitcoin', 'ethereum', 'solana']),
     staleTime: 30_000,
+    enabled: tab === 'Markets',
   });
-  const { data: stable } = useQuery({
+  const { data: stable, isLoading: stableLoading } = useQuery({
     queryKey: ['intel', 'stablecoins', 'page'],
     queryFn: () => fetchStablecoinMarkets(),
     staleTime: 30_000,
+    enabled: tab === 'Markets',
   });
-  const { data: fredData } = useQuery({
+  const { data: fredData, isLoading: fredLoading } = useQuery({
     queryKey: ['intel', 'fred-page'],
     queryFn: () => fetchAllFredSeries(120),
     staleTime: 300_000, // 5 min - economic data is slow-moving
+    enabled: tab === 'Economy',
   });
-  const { data: energy } = useQuery({
+  const { data: energy, isLoading: energyLoading } = useQuery({
     queryKey: ['intel', 'energy', 'page'],
     queryFn: () => fetchEnergyPrices(),
     staleTime: 60_000,
+    enabled: tab === 'Markets',
   });
-  const { data: earthquakes } = useQuery({
+  const { data: earthquakes, isLoading: eqLoading } = useQuery({
     queryKey: ['intel', 'earthquakes', 'page'],
     queryFn: fetchBootstrapEarthquakes,
     staleTime: 60_000,
+    enabled: tab === 'Disasters',
   });
-  const { data: weather } = useQuery({
+  const { data: weather, isLoading: weatherLoading } = useQuery({
     queryKey: ['intel', 'weather', 'page'],
     queryFn: fetchWeatherAlerts,
     staleTime: 60_000,
+    enabled: tab === 'Disasters',
   });
-  const { data: gdacs } = useQuery({
+  const { data: gdacs, isLoading: gdacsLoading } = useQuery({
     queryKey: ['intel', 'gdacs', 'page'],
     queryFn: fetchGDACSEvents,
     staleTime: 60_000,
+    enabled: tab === 'Disasters',
   });
 
   const cryptoList = crypto ?? [];
@@ -135,7 +142,13 @@ export default function IntelPage() {
                 Stablecoins
               </h2>
               <div className="space-y-2">
-                {stableList.length === 0 ? (
+                {stableLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-9 animate-pulse rounded-lg bg-white/[0.04]" />
+                    ))}
+                  </div>
+                ) : stableList.length === 0 ? (
                   <p className="text-[11px] text-zinc-500">No stablecoin data</p>
                 ) : (
                   stableList.slice(0, 8).map((s) => (
@@ -170,7 +183,13 @@ export default function IntelPage() {
                 Energy Prices
               </h2>
               <div className="flex flex-wrap gap-2">
-                {energyList.length === 0 ? (
+                {energyLoading ? (
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="h-8 w-24 animate-pulse rounded-lg bg-white/[0.04]" />
+                    ))}
+                  </div>
+                ) : energyList.length === 0 ? (
                   <p className="text-[11px] text-zinc-500">No energy data</p>
                 ) : (
                   energyList.map((e, i) => (
@@ -240,7 +259,13 @@ export default function IntelPage() {
               <h2 className="mb-3 text-[12px] font-bold text-zinc-300 uppercase tracking-wider">
                 Earthquakes
               </h2>
-              {eqList.length > 0 ? (
+              {eqLoading && eqList.length === 0 ? (
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="h-9 animate-pulse rounded-lg bg-white/[0.04]" />
+                  ))}
+                </div>
+              ) : eqList.length > 0 ? (
                 <div className="space-y-2">
                   {eqList.slice(0, 8).map((e, i) => (
                     <a
@@ -297,7 +322,13 @@ export default function IntelPage() {
               <h2 className="mb-3 text-[12px] font-bold text-zinc-300 uppercase tracking-wider">
                 GDACS Disasters
               </h2>
-              {gdacsList.length > 0 ? (
+              {gdacsLoading && gdacsList.length === 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="h-14 min-w-[140px] animate-pulse rounded-lg bg-white/[0.04]" />
+                  ))}
+                </div>
+              ) : gdacsList.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {gdacsList.slice(0, 12).map((f, i) => {
                     const url =

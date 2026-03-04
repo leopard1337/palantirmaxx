@@ -7,6 +7,7 @@ import type { FeedItem, MoverEntry } from '@/lib/api/types';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { MoversTableSkeleton } from '@/components/LoadingSkeleton';
 import { MoverCard } from '@/components/MoverCard';
+import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 type SortKey = 'rank' | 'change' | 'volume' | 'recent';
 type ImpactFilter = 'all' | 'critical' | 'medium' | 'low';
@@ -177,17 +178,10 @@ export default function MoversPage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {error && (
-          <div className="mb-4 rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-red-300">
-            <p className="text-[12px] font-medium">Error loading movers</p>
-            <p className="mt-1 text-[11px] text-red-400/70">{String(error)}</p>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="mt-3 rounded bg-red-900/40 px-3 py-1.5 text-[11px] hover:bg-red-900/60"
-            >
-              Retry
-            </button>
-          </div>
+          <QueryErrorBanner
+            message={`Error loading movers: ${String(error)}`}
+            onRetry={() => refetch()}
+          />
         )}
 
         {isLoading && <MoversTableSkeleton />}

@@ -7,6 +7,7 @@ import { fetchFeed } from '@/lib/api/feed';
 import type { FeedItem } from '@/lib/api/types';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { FeedListSkeleton } from '@/components/LoadingSkeleton';
+import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 import { ShortcutHelp } from '@/components/ShortcutHelp';
 import { VirtualizedFeedList } from '@/components/VirtualizedFeedList';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -177,7 +178,10 @@ function FeedContent() {
 
         {/* Source type pills - centered */}
         <div className="flex flex-col items-center gap-2">
-          <div className="flex flex-wrap justify-center gap-1.5">
+          <div
+            className="flex flex-wrap justify-center gap-1.5"
+            data-walkthrough="feed-type-pills"
+          >
             {FEED_TYPES.map((t) => (
               <button
                 key={t}
@@ -336,21 +340,15 @@ function FeedContent() {
       )}
 
       {/* Content */}
+      <div className="flex-1 min-h-0 flex flex-col" data-walkthrough="feed-content">
       {!showList && (
         <div className="flex-1 overflow-y-auto p-4">
           {error && (
-            <div className="mb-4 rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-red-300">
-              <p className="text-[12px] font-medium">Error loading feed</p>
-              <p className="mt-1 text-[11px] text-red-400/70">
-                {String(error)}
-              </p>
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="mt-3 rounded bg-red-900/40 px-3 py-1.5 text-[11px] hover:bg-red-900/60"
-              >
-                Retry
-              </button>
+            <div className="mb-4">
+              <QueryErrorBanner
+                message={`Error loading feed: ${String(error)}`}
+                onRetry={() => refetch()}
+              />
             </div>
           )}
           {isLoading && <FeedListSkeleton />}
@@ -407,6 +405,7 @@ function FeedContent() {
           )}
         </div>
       )}
+      </div>
 
       <FeedDetailDrawer
         item={selectedItem}

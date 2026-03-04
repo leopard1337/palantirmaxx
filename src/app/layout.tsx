@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
 import { Providers } from '@/components/Providers';
 import { TopBar } from '@/components/TopBar';
+import { WalkthroughOverlay } from '@/components/WalkthroughOverlay';
 import './globals.css';
 
 const jetbrains = JetBrains_Mono({
@@ -32,6 +33,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-hidden bg-background">
               {children}
             </main>
+            <WalkthroughOverlay />
           </div>
         </Providers>
       </body>
