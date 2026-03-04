@@ -9,13 +9,10 @@ import type { GDACSFeature } from '@/lib/api/intel-types';
 const CompactEarthquake = memo(function CompactEarthquake({ e }: { e: Earthquake }) {
   const mag = e.magnitude ?? 0;
   const severe = mag >= 6;
-  return (
-    <a
-      href={e.sourceUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors"
-    >
+  const hasLink = e.sourceUrl?.startsWith('http');
+  const className = 'flex items-center justify-between px-3 py-1.5 border-b border-white/[0.06] hover:bg-white/[0.06] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+  const content = (
+    <>
       <div className="min-w-0 flex-1">
         <p className="text-[11px] text-zinc-200 truncate">{e.place ?? 'Unknown'}</p>
         <p className="text-[9px] text-zinc-500">{e.occurredAt ?? ''}</p>
@@ -23,8 +20,16 @@ const CompactEarthquake = memo(function CompactEarthquake({ e }: { e: Earthquake
       <span className={`shrink-0 text-[11px] font-bold font-mono ${severe ? 'text-red-400' : 'text-amber-400'}`}>
         M{mag.toFixed(1)}
       </span>
-    </a>
+    </>
   );
+  if (hasLink) {
+    return (
+      <a href={e.sourceUrl!} target="_blank" rel="noopener noreferrer" className={className}>
+        {content}
+      </a>
+    );
+  }
+  return <div className={className}>{content}</div>;
 });
 
 const CompactWeather = memo(function CompactWeather({ a }: { a: WeatherAlert }) {

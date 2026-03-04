@@ -1,7 +1,8 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Component, useState, type ReactNode } from 'react';
+import { Component, useState, type ReactNode, type ErrorInfo } from 'react';
+import { Toaster } from 'sonner';
 import { WalkthroughProvider } from '@/context/WalkthroughContext';
 
 class ErrorBoundary extends Component<
@@ -12,6 +13,10 @@ class ErrorBoundary extends Component<
 
   static getDerivedStateFromError(error: Error) {
     return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[Providers.ErrorBoundary]', error.message, info.componentStack);
   }
 
   render() {
@@ -59,7 +64,16 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <WalkthroughProvider>{children}</WalkthroughProvider>
+        <WalkthroughProvider>
+          {children}
+          <Toaster
+            theme="dark"
+            position="bottom-center"
+            toastOptions={{
+              className: 'bg-surface border border-white/[0.08] text-zinc-200 text-[11px]',
+            }}
+          />
+        </WalkthroughProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { fetchEvents, CATEGORIES, type EventCategory } from '@/lib/api/events';
 import type { EventData, EventMarket } from '@/lib/api/types';
 import { formatVolume, formatProbability } from '@/lib/utils';
+import { getPreference, setPreference } from '@/lib/preferences';
 import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 function MarketRow({
@@ -66,7 +67,14 @@ function MarketRow({
 }
 
 export default function MarketsPage() {
-  const [category, setCategory] = useState<EventCategory>('all');
+  const [category, setCategory] = useState<EventCategory>(() => {
+    const stored = getPreference('marketsCategory');
+    return (stored && (CATEGORIES as readonly string[]).includes(stored) ? stored : 'all') as EventCategory;
+  });
+  const setCategoryAndSave = (c: EventCategory) => {
+    setCategory(c);
+    setPreference('marketsCategory', c);
+  };
   const [search, setSearch] = useState('');
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -115,7 +123,7 @@ export default function MarketsPage() {
             <button
               key={c}
               type="button"
-              onClick={() => setCategory(c)}
+              onClick={() => setCategoryAndSave(c)}
               className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors ${
                 category === c
                   ? 'bg-white/[0.1] text-zinc-100'

@@ -1,5 +1,5 @@
 {
-  "name": "temp-app",
+  "name": "operation-palantir",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -9,17 +9,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
     "test": "vitest run"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-virtual": "^3.13.19",
     "@types/three": "^0.183.1",
+    "focus-trap-react": "^12.0.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-globe.gl": "^2.37.0",
+    "sonner": "^2.0.7",
     "three": "^0.183.2"
   },
   "devDependencies": {

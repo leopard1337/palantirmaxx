@@ -36,9 +36,8 @@ Real-time prediction market intelligence terminal. Aggregates feed signals (news
 - **/grid** — Multi-column grid view (2–4 columns) with independent source types
 - **/events** — Events by category (Politics, Crypto, Finance, etc.)
 - **/movers** — Top movers (auto-refresh every 60s)
-- **/terminal** — Vision Terminal with 3D globe, tension gauge, aircraft filters
+- **/globe** — Vision Terminal with 3D globe, tension gauge, aircraft filters
 - **/markets** — Markets browser (links to Events)
-- **/settings** — API config
 
 ## Keyboard Shortcuts (Feed page)
 

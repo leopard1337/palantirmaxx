@@ -1,7 +1,8 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { getPreference, setPreference } from '@/lib/preferences';
 import {
   fetchCryptoQuotes,
   fetchStablecoinMarkets,
@@ -18,49 +19,60 @@ const TABS = ['Markets', 'Economy', 'Disasters'] as const;
 type TabId = (typeof TABS)[number];
 
 export default function IntelPage() {
-  const [tab, setTab] = useState<TabId>('Markets');
+  const [tab, setTab] = useState<TabId>(() => getPreference('intelTab') ?? 'Markets');
+
+  useEffect(() => {
+    setPreference('intelTab', tab);
+  }, [tab]);
 
   const { data: crypto, isLoading: cryptoLoading } = useQuery({
-    queryKey: ['intel', 'crypto', 'page'],
+    queryKey: ['intel', 'crypto'],
     queryFn: () => fetchCryptoQuotes(['bitcoin', 'ethereum', 'solana']),
     staleTime: 30_000,
     enabled: tab === 'Markets',
+    placeholderData: keepPreviousData,
   });
   const { data: stable, isLoading: stableLoading } = useQuery({
-    queryKey: ['intel', 'stablecoins', 'page'],
+    queryKey: ['intel', 'stablecoins'],
     queryFn: () => fetchStablecoinMarkets(),
     staleTime: 30_000,
     enabled: tab === 'Markets',
+    placeholderData: keepPreviousData,
   });
   const { data: fredData, isLoading: fredLoading } = useQuery({
     queryKey: ['intel', 'fred-page'],
     queryFn: () => fetchAllFredSeries(120),
     staleTime: 300_000, // 5 min - economic data is slow-moving
     enabled: tab === 'Economy',
+    placeholderData: keepPreviousData,
   });
   const { data: energy, isLoading: energyLoading } = useQuery({
     queryKey: ['intel', 'energy', 'page'],
     queryFn: () => fetchEnergyPrices(),
     staleTime: 60_000,
     enabled: tab === 'Markets',
+    placeholderData: keepPreviousData,
   });
   const { data: earthquakes, isLoading: eqLoading } = useQuery({
-    queryKey: ['intel', 'earthquakes', 'page'],
+    queryKey: ['intel', 'earthquakes'],
     queryFn: fetchBootstrapEarthquakes,
     staleTime: 60_000,
     enabled: tab === 'Disasters',
+    placeholderData: keepPreviousData,
   });
   const { data: weather, isLoading: weatherLoading } = useQuery({
     queryKey: ['intel', 'weather', 'page'],
     queryFn: fetchWeatherAlerts,
     staleTime: 60_000,
     enabled: tab === 'Disasters',
+    placeholderData: keepPreviousData,
   });
   const { data: gdacs, isLoading: gdacsLoading } = useQuery({
-    queryKey: ['intel', 'gdacs', 'page'],
+    queryKey: ['intel', 'gdacs'],
     queryFn: fetchGDACSEvents,
     staleTime: 60_000,
     enabled: tab === 'Disasters',
+    placeholderData: keepPreviousData,
   });
 
   const cryptoList = crypto ?? [];
@@ -74,7 +86,7 @@ export default function IntelPage() {
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 border-b border-white/[0.06] px-5 py-3.5">
-        <h1 className="mb-3 text-[15px] font-semibold text-zinc-100">
+        <h1 className="mb-3 text-base md:text-[15px] font-semibold text-zinc-100">
           Intelligence Hub
         </h1>
         <div className="flex flex-wrap gap-1.5">
@@ -96,7 +108,7 @@ export default function IntelPage() {
 
       <div className="flex-1 overflow-y-auto p-4">
         {tab === 'Markets' && (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 animate-tab-fade">
             <section className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
               <h2 className="mb-3 text-[12px] font-bold text-zinc-300 uppercase tracking-wider">
                 Crypto
@@ -245,16 +257,23 @@ export default function IntelPage() {
                 </section>
               );
             })}
-            {fredList.length === 0 && (
+            {fredLoading && fredList.length === 0 && (
+              <div className="col-span-2 grid gap-4 md:grid-cols-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-24 animate-pulse rounded-xl bg-white/[0.04]" />
+                ))}
+              </div>
+            )}
+            {!fredLoading && fredList.length === 0 && (
               <p className="text-[11px] text-zinc-500 col-span-2">
-                Loading economic indicators…
+                No economic data
               </p>
             )}
           </div>
         )}
 
         {tab === 'Disasters' && (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 animate-tab-fade">
             <section className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
               <h2 className="mb-3 text-[12px] font-bold text-zinc-300 uppercase tracking-wider">
                 Earthquakes
@@ -267,12 +286,15 @@ export default function IntelPage() {
                 </div>
               ) : eqList.length > 0 ? (
                 <div className="space-y-2">
-                  {eqList.slice(0, 8).map((e, i) => (
-                    <a
+                  {eqList.slice(0, 8).map((e, i) => {
+                    const Wrapper = e.sourceUrl?.startsWith('http') ? 'a' : 'div';
+                    const linkProps = e.sourceUrl?.startsWith('http')
+                      ? { href: e.sourceUrl, target: '_blank' as const, rel: 'noopener noreferrer' }
+                      : {};
+                    return (
+                    <Wrapper
                       key={e.id ?? i}
-                      href={e.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      {...linkProps}
                       className="flex items-center justify-between rounded-lg bg-white/[0.03] px-3 py-2 hover:bg-white/[0.05] transition-colors"
                     >
                       <span className="text-[11px] text-zinc-200 truncate pr-2">
@@ -285,8 +307,9 @@ export default function IntelPage() {
                       >
                         M{e.magnitude?.toFixed(1) ?? '?'}
                       </span>
-                    </a>
-                  ))}
+                    </Wrapper>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-[11px] text-zinc-500">No earthquake data</p>

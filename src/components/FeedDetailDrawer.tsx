@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import FocusTrap from 'focus-trap-react';
 import type { FeedItem } from '@/lib/api/types';
 import {
   getFeedSourceType,
@@ -9,6 +10,7 @@ import {
   getFeedSourceLabel,
   getFeedLink,
   formatTimeAgo,
+  getFeedTimestamp,
   getCountryFlag,
   formatProbability,
   formatVolume,
@@ -22,15 +24,6 @@ export function FeedDetailDrawer({
   item: FeedItem | null;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    if (!item) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [item, onClose]);
-
   if (!item) return null;
 
   const sourceType = getFeedSourceType(item);
@@ -73,13 +66,28 @@ export function FeedDetailDrawer({
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] animate-backdrop-fade"
         onClick={onClose}
+        aria-hidden="true"
       />
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-white/[0.06] bg-surface shadow-2xl animate-slide-in">
+      <FocusTrap
+        active={!!item}
+        focusTrapOptions={{
+          allowOutsideClick: true,
+          escapeDeactivates: false,
+          returnFocusOnDeactivate: true,
+          clickOutsideDeactivates: false,
+        }}
+      >
+        <div
+          className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[90vw] md:max-w-md flex-col border-l border-white/[0.06] bg-surface shadow-2xl animate-slide-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Feed item detail"
+        >
         <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            {item.tweet?.user.pfp ? (
+            {item.tweet?.user?.pfp ? (
               <img
                 src={item.tweet.user.pfp}
                 alt=""
@@ -103,7 +111,7 @@ export function FeedDetailDrawer({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-zinc-500 tabular-nums">
-              {formatTimeAgo(item.timestamp)}
+              {formatTimeAgo(getFeedTimestamp(item))}
             </span>
             <button
               type="button"
@@ -301,7 +309,8 @@ export function FeedDetailDrawer({
             </a>
           </div>
         )}
-      </div>
+        </div>
+      </FocusTrap>
     </>
   );
 }

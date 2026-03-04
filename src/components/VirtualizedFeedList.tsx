@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import type { FeedItem } from '@/lib/api/types';
 import { FEED_CARD_GAP } from '@/lib/constants';
 import { FeedCard } from './FeedCard';
+import { usePullToRefreshScrollRef } from './PullToRefresh';
 
 export function VirtualizedFeedList({
   items,
@@ -16,10 +17,12 @@ export function VirtualizedFeedList({
   loading?: boolean;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const externalScrollRef = usePullToRefreshScrollRef();
 
   const virtualizer = useVirtualizer({
     count: items.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () =>
+      externalScrollRef?.current ?? parentRef.current,
     estimateSize: () => 120 + FEED_CARD_GAP,
     gap: 0, // gap doesn't work with measureElement; we bake it into each item
     overscan: 8,
@@ -41,41 +44,49 @@ export function VirtualizedFeedList({
 
   if (items.length === 0) return null;
 
+  const content = (
+    <div
+      style={{
+        height: `${virtualizer.getTotalSize()}px`,
+        width: '100%',
+        position: 'relative',
+      }}
+    >
+      {virtualizer.getVirtualItems().map((virtualRow) => {
+        const item = items[virtualRow.index];
+        return (
+          <div
+            key={item.id}
+            data-index={virtualRow.index}
+            ref={virtualizer.measureElement}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${virtualRow.start}px)`,
+              paddingBottom: FEED_CARD_GAP,
+              willChange: 'transform',
+            }}
+          >
+            <FeedCard item={item} onClick={() => onItemClick(item)} />
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  if (externalScrollRef) {
+    return <div className="h-full min-h-full" style={{ contain: 'strict' }}>{content}</div>;
+  }
+
   return (
     <div
       ref={parentRef}
       className="h-full overflow-y-auto"
       style={{ contain: 'strict' }}
     >
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
-          const item = items[virtualRow.index];
-          return (
-            <div
-              key={item.id}
-              data-index={virtualRow.index}
-              ref={virtualizer.measureElement}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${virtualRow.start}px)`,
-                paddingBottom: FEED_CARD_GAP,
-                willChange: 'transform',
-              }}
-            >
-              <FeedCard item={item} onClick={() => onItemClick(item)} />
-            </div>
-          );
-        })}
-      </div>
+      {content}
     </div>
   );
 }

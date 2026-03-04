@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { memo } from 'react';
 import { fetchMovers } from '@/lib/api/movers';
 import type { FeedItem, MoverEntry } from '@/lib/api/types';
-import { formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo, getFeedTimestamp } from '@/lib/utils';
 
 const CompactMover = memo(function CompactMover({
   mover,
@@ -42,7 +42,7 @@ const CompactMover = memo(function CompactMover({
           </span>
         )}
         <span className="ml-auto text-[10px] text-zinc-600 tabular-nums shrink-0">
-          {formatTimeAgo(fi.timestamp)}
+          {formatTimeAgo(getFeedTimestamp(fi))}
         </span>
       </div>
       <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 mt-0.5">

@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const CG_BASE = 'https://api.coingecko.com/api/v3';
+const ID_REGEX = /^[a-z0-9_-]+$/i;
+
+function sanitizeIds(raw: string | null): string {
+  const defaultIds = 'bitcoin,ethereum,solana';
+  const str = (raw ?? defaultIds).trim();
+  if (!str) return defaultIds;
+  const valid = str
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 0 && ID_REGEX.test(s))
+    .slice(0, 20);
+  return valid.length > 0 ? valid.join(',') : defaultIds;
+}
 
 export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get('type');
-  const ids = request.nextUrl.searchParams.get('ids') ?? 'bitcoin,ethereum,solana';
+  const ids = sanitizeIds(request.nextUrl.searchParams.get('ids'));
 
   try {
     let url: string;

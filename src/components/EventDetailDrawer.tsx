@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import FocusTrap from 'focus-trap-react';
 import type { EventData } from '@/lib/api/types';
 import { formatVolume, formatProbability } from '@/lib/utils';
 
@@ -11,24 +12,30 @@ export function EventDetailDrawer({
   event: EventData | null;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    if (!event) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [event, onClose]);
-
   if (!event) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] animate-backdrop-fade"
         onClick={onClose}
+        aria-hidden="true"
       />
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-white/[0.06] bg-surface shadow-2xl animate-slide-in">
+      <FocusTrap
+        active={!!event}
+        focusTrapOptions={{
+          allowOutsideClick: true,
+          escapeDeactivates: false,
+          returnFocusOnDeactivate: true,
+          clickOutsideDeactivates: false,
+        }}
+      >
+        <div
+          className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[90vw] md:max-w-md flex-col border-l border-white/[0.06] bg-surface shadow-2xl animate-slide-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Event detail"
+        >
         <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3 shrink-0">
           <span className="text-[11px] font-semibold text-zinc-200">
             Event Detail
@@ -154,7 +161,8 @@ export function EventDetailDrawer({
             Trade on Polymarket
           </a>
         </div>
-      </div>
+        </div>
+      </FocusTrap>
     </>
   );
 }

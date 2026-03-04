@@ -1,9 +1,10 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { memo, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { fetchFeed } from '@/lib/api/feed';
+import { flattenFeedPages } from '@/lib/feed-infinite';
 import type { FeedItem } from '@/lib/api/types';
 import {
   getFeedSourceType,
@@ -11,12 +12,13 @@ import {
   getFeedTitle,
   getFeedSourceLabel,
   formatTimeAgo,
+  getFeedTimestamp,
 } from '@/lib/utils';
 import { SOURCE_DOT } from '@/lib/constants';
 
 const ITEM_GAP = 0;
 
-const CompactItem = memo(function CompactItem({
+function CompactItem({
   item,
   onClick,
 }: {
@@ -44,7 +46,7 @@ const CompactItem = memo(function CompactItem({
           </span>
         )}
         <span className="ml-auto text-[10px] text-zinc-600 tabular-nums shrink-0">
-          {formatTimeAgo(item.timestamp)}
+          {formatTimeAgo(getFeedTimestamp(item))}
         </span>
       </div>
       <p className="text-[11px] text-zinc-200 leading-snug line-clamp-1 mt-0.5">
@@ -52,7 +54,7 @@ const CompactItem = memo(function CompactItem({
       </p>
     </button>
   );
-});
+}
 
 export function FeedWidget({
   type,
@@ -72,17 +74,10 @@ export function FeedWidget({
     getNextPageParam: () => undefined,
   });
 
-  const items = useMemo(() => {
-    if (!data) return [];
-    const seen = new Set<string>();
-    return data.pages
-      .flatMap((p) => p.items)
-      .filter((i) => {
-        if (seen.has(i.id)) return false;
-        seen.add(i.id);
-        return true;
-      });
-  }, [data]);
+  const items = useMemo(
+    () => flattenFeedPages(data?.pages),
+    [data?.pages],
+  );
 
   const virtualizer = useVirtualizer({
     count: items.length,

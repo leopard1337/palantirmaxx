@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { getPreference, setPreference } from '@/lib/preferences';
 import {
   fetchEvents,
   CATEGORIES,
@@ -33,6 +34,7 @@ function EventsContent() {
 
   const updateCategory = useCallback(
     (newCat: EventCategory) => {
+      setPreference('eventsCategory', newCat);
       const params = new URLSearchParams(searchParams.toString());
       if (newCat === 'all') params.delete('category');
       else params.set('category', newCat);

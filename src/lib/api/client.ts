@@ -1,6 +1,6 @@
 import { getApiUrl } from './base-url';
 
-const dedupeCache = new Map<string, Promise<Response>>();
+const dedupeCache = new Map<string, Promise<unknown>>();
 const DEDUPE_MS = 100;
 
 async function fetchWithRetry(
@@ -37,35 +37,30 @@ export async function apiRequest<T>(
 
   const cacheKey = url;
   const existing = dedupeCache.get(cacheKey);
-  if (existing) {
-    const res = await existing;
+  if (existing) return existing as Promise<T>;
+
+  const promise = (async (): Promise<T> => {
+    const res = await fetchWithRetry(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+
+    if (res.status === 401) {
+      throw new Error('Token expired or invalid. Please update GLINT_BEARER.');
+    }
+
     if (!res.ok) {
       const text = await res.text();
       throw new Error(text || `API error ${res.status}`);
     }
-    return res.json() as Promise<T>;
-  }
 
-  const promise = fetchWithRetry(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-  });
+    return res.json() as Promise<T>;
+  })();
 
   dedupeCache.set(cacheKey, promise);
   setTimeout(() => dedupeCache.delete(cacheKey), DEDUPE_MS);
 
-  const res = await promise;
-
-  if (res.status === 401) {
-    throw new Error('Token expired or invalid. Please update GLINT_BEARER.');
-  }
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `API error ${res.status}`);
-  }
-
-  return res.json() as Promise<T>;
+  return promise;
 }

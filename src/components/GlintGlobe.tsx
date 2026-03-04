@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FlightData, CountryFeedData } from '@/lib/api/types';
+import type { FlightData, CountryFeedData, FeedItem } from '@/lib/api/types';
 import { CAT_COLORS } from '@/lib/constants';
-import { formatTimeAgo, getFeedBody } from '@/lib/utils';
+import { formatTimeAgo, getFeedBody, getFeedTimestamp } from '@/lib/utils';
 import { getCountryCentroid, buildCentroidMap } from '@/lib/country-centroids';
 
 const Globe = dynamic(() => import('react-globe.gl'), {
@@ -35,7 +35,7 @@ interface MentionPoint {
   radius: number;
   color: string;
   _type: 'mention';
-  _src: { country: string; count: number; tweet: string; ts: string };
+  _src: { country: string; count: number; tweet: string; ts: string; recent: FeedItem[] };
 }
 
 const INIT_POV = { lat: 30, lng: 45, altitude: 2.2 };
@@ -69,12 +69,14 @@ export const GlintGlobe = memo(function GlintGlobe({
   geoJson,
   selectedFlight,
   onFlightClick,
+  onMentionClick,
 }: {
   flights: FlightData[];
   countryFeed: CountryFeedData[];
   geoJson: Record<string, unknown> | null;
   selectedFlight: FlightData | null;
   onFlightClick: (flight: FlightData) => void;
+  onMentionClick?: (data: { country: string; count: number; recent: FeedItem[] }) => void;
 }) {
   const globeRef = useRef<any>(null);
   const [hovered, setHovered] = useState<FlightData | null>(null);
@@ -167,7 +169,7 @@ export const GlintGlobe = memo(function GlintGlobe({
       const top = Array.isArray(recent) ? recent[0] : null;
       const body = top ? getFeedBody(top) || '' : '';
       const tweet = body ? body.slice(0, 120) + (body.length > 120 ? '…' : '') : '—';
-      const ts = top ? formatTimeAgo(top.timestamp) : '—';
+      const ts = top ? formatTimeAgo(getFeedTimestamp(top)) : '—';
       out.push({
         id: `mention-${String(country).replace(/\W/g, '_')}`,
         lat: centroid[0],
@@ -176,7 +178,7 @@ export const GlintGlobe = memo(function GlintGlobe({
         radius: Math.min(0.5, 0.2 + Math.log10(count + 1) * 0.08),
         color: count > 50 ? '#ff4d4d' : count > 10 ? '#ff7a4d' : '#ffa94d',
         _type: 'mention',
-        _src: { country, count, tweet, ts },
+        _src: { country, count, tweet, ts, recent: Array.isArray(recent) ? recent : [] },
       });
     }
     return out;
@@ -227,10 +229,20 @@ export const GlintGlobe = memo(function GlintGlobe({
 
   const onClick = useCallback(
     (pt: any) => {
-      if (!pt || pt._type !== 'flight') return;
-      onFlightClick(pt._src);
+      if (!pt) return;
+      if (pt._type === 'flight') {
+        onFlightClick(pt._src);
+        return;
+      }
+      if (pt._type === 'mention' && onMentionClick && pt._src?.recent?.length) {
+        onMentionClick({
+          country: pt._src.country,
+          count: pt._src.count,
+          recent: pt._src.recent,
+        });
+      }
     },
-    [onFlightClick],
+    [onFlightClick, onMentionClick],
   );
 
   return (

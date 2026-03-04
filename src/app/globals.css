@@ -67,6 +67,46 @@ body {
   50% { opacity: 0.5; }
 }
 
+/* Skip link - visible only when focused */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  z-index: 100;
+}
+.skip-to-content:focus {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--accent);
+  color: black;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Visible focus styles for dark theme - buttons, links, inputs */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .animate-fade-in {
   animation: fade-in 0.2s ease-out both;
 }
@@ -159,6 +199,15 @@ body {
   .animate-highlight-ring {
     animation: none !important;
   }
+  .animate-backdrop-fade,
+  .animate-tab-fade,
+  .animate-shimmer {
+    animation: none !important;
+  }
+  .transition-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
   .stagger-list > * {
     animation: none !important;
   }
@@ -192,3 +241,48 @@ body {
 .stagger-list > *:nth-child(8) { animation-delay: 210ms; }
 .stagger-list > *:nth-child(9) { animation-delay: 240ms; }
 .stagger-list > *:nth-child(10) { animation-delay: 270ms; }
+.stagger-list > *:nth-child(n+11) { animation-delay: 300ms; }
+
+/* Backdrop fade-in for modals/drawers */
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-backdrop-fade {
+  animation: backdrop-fade 0.2s ease-out;
+}
+
+/* Tab/content fade for panel switches */
+@keyframes tab-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-tab-fade {
+  animation: tab-fade 0.2s ease-out;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(39,39,42,0.4) 0%,
+    rgba(63,63,70,0.5) 50%,
+    rgba(39,39,42,0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Card hover lift */
+.transition-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.transition-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+

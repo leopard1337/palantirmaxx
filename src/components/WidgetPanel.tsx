@@ -8,6 +8,7 @@ import {
   WIDGET_CATALOG,
 } from '@/lib/dashboard-store';
 import type { FeedItem, EventData } from '@/lib/api/types';
+import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { CryptoStablecoinWidget } from './widgets/CryptoStablecoinWidget';
 import { DisastersWeatherWidget } from './widgets/DisastersWeatherWidget';
 import { EconomicWidget } from './widgets/EconomicWidget';
@@ -53,7 +54,7 @@ function WidgetSelector({
   );
 
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-black/60 backdrop-blur-sm">
+    <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-black/60 backdrop-blur-sm animate-backdrop-fade">
       <div
         ref={ref}
         className="w-64 max-h-[85%] overflow-y-auto rounded-lg border border-white/[0.1] bg-surface shadow-2xl animate-scale-in"
@@ -188,11 +189,11 @@ export function WidgetPanel({
       <div className="relative h-full min-h-0 overflow-hidden">
         <button
           onClick={() => setSelectorOpen(true)}
-          className="flex h-full w-full flex-col items-center justify-center rounded-lg border border-dashed border-white/[0.08] bg-white/[0.02] transition-all hover:border-white/[0.14] hover:bg-white/[0.04] group"
+          className="flex h-full w-full flex-col items-center justify-center rounded-lg border border-dashed border-white/[0.08] bg-white/[0.02] transition-all hover:border-accent/20 hover:bg-white/[0.04] group active:scale-[0.98]"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/[0.06] border border-white/[0.06] mb-2 transition-colors group-hover:border-white/[0.1] group-hover:bg-white/[0.08]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/[0.06] border border-white/[0.06] mb-2 transition-all group-hover:border-accent/30 group-hover:bg-accent/5 group-hover:shadow-[0_0_12px_rgba(0,255,163,0.1)]">
             <svg
-              className="h-5 w-5 text-zinc-500 group-hover:text-zinc-300 transition-colors"
+              className="h-5 w-5 text-zinc-500 group-hover:text-accent/80 transition-colors"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -272,11 +273,13 @@ export function WidgetPanel({
       </div>
       <div className="flex-1 min-h-0 relative">
         <div className="absolute inset-0 overflow-hidden">
-          <WidgetContent
-            type={panel.widget}
-            onSelectFeedItem={onSelectFeedItem}
-            onSelectEvent={onSelectEvent}
-          />
+          <WidgetErrorBoundary widgetLabel={getWidgetLabel(panel.widget)}>
+            <WidgetContent
+              type={panel.widget}
+              onSelectFeedItem={onSelectFeedItem}
+              onSelectEvent={onSelectEvent}
+            />
+          </WidgetErrorBoundary>
         </div>
       </div>
       {selectorOpen && (

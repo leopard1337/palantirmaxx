@@ -8,6 +8,7 @@ import {
   getFeedTitle,
   getFeedSourceLabel,
   formatTimeAgo,
+  getFeedTimestamp,
   getCountryFlag,
   formatVolume,
 } from '@/lib/utils';
@@ -110,7 +111,7 @@ export const MoverCard = memo(function MoverCard({
     <button
       type="button"
       onClick={onClick}
-      className="group w-full text-left rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden transition-all hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998]"
+      className="group w-full text-left rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden transition-all transition-lift hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998]"
     >
       {/* Top bar: rank + market identity + sparkline */}
       <div className="flex items-start gap-3 px-4 pt-3.5 pb-2">
@@ -202,7 +203,7 @@ export const MoverCard = memo(function MoverCard({
               </span>
             )}
             <span className="ml-auto text-[9px] text-zinc-600 tabular-nums shrink-0">
-              {formatTimeAgo(fi.timestamp)}
+              {formatTimeAgo(getFeedTimestamp(fi))}
             </span>
           </div>
 

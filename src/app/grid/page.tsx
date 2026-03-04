@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { fetchFeed } from '@/lib/api/feed';
+import { flattenFeedPages, getFeedNextPageParam } from '@/lib/feed-infinite';
 import type { FeedItem } from '@/lib/api/types';
 import { FeedCard } from '@/components/FeedCard';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
@@ -29,21 +30,14 @@ function GridColumn({
         }),
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
-        lastPage.items.length >= 15 ? allPages.length + 1 : undefined,
+        getFeedNextPageParam(lastPage, allPages, 15),
       staleTime: 20_000,
     });
 
-  const items = useMemo(() => {
-    if (!data) return [];
-    const seen = new Set<string>();
-    return data.pages
-      .flatMap((p) => p.items)
-      .filter((i) => {
-        if (seen.has(i.id)) return false;
-        seen.add(i.id);
-        return true;
-      });
-  }, [data]);
+  const items = useMemo(
+    () => flattenFeedPages(data?.pages),
+    [data?.pages],
+  );
 
   const typeLabels: Record<string, string> = {
     all: 'All',
@@ -92,7 +86,7 @@ function GridColumn({
             type="button"
             onClick={() => fetchNextPage()}
             disabled={isFetching}
-            className="mt-2 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] py-1.5 text-[10px] text-zinc-400 hover:bg-white/[0.06] disabled:opacity-50"
+            className="mt-2 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] py-1.5 text-[10px] text-zinc-400 hover:bg-white/[0.06] disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {isFetching ? 'Loading...' : 'Load more'}
           </button>
@@ -116,7 +110,7 @@ function GridContent() {
               key={n}
               type="button"
               onClick={() => setCols(n)}
-              className={`rounded-lg px-2 py-1 text-[10px] font-medium transition-colors ${
+              className={`rounded-lg px-2 py-1 text-[10px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 cols === n
                   ? 'bg-white/[0.1] text-zinc-100'
                   : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
@@ -128,8 +122,7 @@ function GridContent() {
         </div>
       </div>
       <div
-        className="grid flex-1 gap-2 min-h-0"
-        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+        className={`grid flex-1 gap-2 min-h-0 grid-cols-1 ${cols >= 2 ? 'sm:grid-cols-2' : ''} ${cols >= 3 ? 'lg:grid-cols-3' : ''}`}
       >
         <GridColumn type="news" onItemClick={setSelectedItem} />
         <GridColumn type="tweet" onItemClick={setSelectedItem} />

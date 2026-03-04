@@ -1,5 +1,7 @@
 'use client';
 
+import FocusTrap from 'focus-trap-react';
+
 export function ShortcutHelp({
   onClose,
   feedShortcuts = true,
@@ -9,16 +11,25 @@ export function ShortcutHelp({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 animate-backdrop-fade"
       role="dialog"
       aria-modal="true"
       aria-labelledby="shortcut-help-title"
       onClick={onClose}
     >
-      <div
-        className="max-w-sm rounded-lg border border-white/[0.08] bg-surface p-4 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
+      <FocusTrap
+        active
+        focusTrapOptions={{
+          allowOutsideClick: true,
+          escapeDeactivates: true,
+          returnFocusOnDeactivate: true,
+          onDeactivate: onClose,
+        }}
       >
+        <div
+          className="max-w-sm rounded-lg border border-white/[0.08] bg-surface p-4 shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
         <h2 id="shortcut-help-title" className="mb-3 text-sm font-semibold text-zinc-200">
           Keyboard shortcuts
         </h2>
@@ -47,7 +58,8 @@ export function ShortcutHelp({
         >
           Close
         </button>
-      </div>
+        </div>
+      </FocusTrap>
     </div>
   );
 }

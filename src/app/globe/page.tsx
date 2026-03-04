@@ -9,6 +9,8 @@ import { getFeedBody } from '@/lib/utils';
 import { detectCountriesFromText } from '@/lib/detect-country';
 import { GlintGlobe } from '@/components/GlintGlobe';
 import { GlobeSidePanel } from '@/components/GlobeSidePanel';
+import { GlobeCountryFeedPanel } from '@/components/GlobeCountryFeedPanel';
+import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { CameraFeedGrid } from '@/components/CameraFeed';
 
 /** Derive country mentions from feed items (fallback when countryFeed API is empty) */
@@ -38,6 +40,12 @@ function aggregateCountriesFromFeed(items: FeedItem[]): CountryFeedData[] {
 export default function GlobePage() {
   const [geoJson, setGeoJson] = useState<Record<string, unknown> | null>(null);
   const [selectedFlight, setSelectedFlight] = useState<FlightData | null>(null);
+  const [selectedCountryFeed, setSelectedCountryFeed] = useState<{
+    country: string;
+    count: number;
+    recent: FeedItem[];
+  } | null>(null);
+  const [selectedFeedItem, setSelectedFeedItem] = useState<FeedItem | null>(null);
   const [camerasOpen, setCamerasOpen] = useState(false);
 
   useEffect(() => {
@@ -78,7 +86,16 @@ export default function GlobePage() {
 
   const handleSelectFlight = useCallback((flight: FlightData) => {
     setSelectedFlight(flight);
+    setSelectedCountryFeed(null);
   }, []);
+
+  const handleMentionClick = useCallback(
+    (data: { country: string; count: number; recent: FeedItem[] }) => {
+      setSelectedCountryFeed(data);
+      setSelectedFlight(null);
+    },
+    [],
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -100,13 +117,24 @@ export default function GlobePage() {
             geoJson={geoJson}
             selectedFlight={selectedFlight}
             onFlightClick={handleSelectFlight}
+            onMentionClick={handleMentionClick}
           />
         </div>
-        <GlobeSidePanel
-          flights={flights}
-          selectedFlight={selectedFlight}
-          onSelectFlight={handleSelectFlight}
-        />
+        {selectedCountryFeed ? (
+          <GlobeCountryFeedPanel
+            country={selectedCountryFeed.country}
+            count={selectedCountryFeed.count}
+            recent={selectedCountryFeed.recent}
+            onSelectItem={(item) => setSelectedFeedItem(item)}
+            onClose={() => setSelectedCountryFeed(null)}
+          />
+        ) : (
+          <GlobeSidePanel
+            flights={flights}
+            selectedFlight={selectedFlight}
+            onSelectFlight={handleSelectFlight}
+          />
+        )}
       </div>
 
       {/* Bottom camera feed panel - fills remaining space to reduce empty area */}
@@ -127,6 +155,11 @@ export default function GlobePage() {
           </div>
         )}
       </div>
+
+      <FeedDetailDrawer
+        item={selectedFeedItem}
+        onClose={() => setSelectedFeedItem(null)}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ interface CardRootProps {
 
 export function Card({ children, className, onClick }: CardRootProps) {
   const base =
-    'rounded-lg border border-white/[0.08] bg-white/[0.03] flex flex-col text-left transition-colors duration-150 hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998] focus:outline-none focus:ring-1 focus:ring-accent/40 focus:ring-offset-1 focus:ring-offset-background';
+    'rounded-lg border border-white/[0.08] bg-white/[0.03] flex flex-col text-left transition-colors duration-150 transition-lift hover:border-white/[0.14] hover:bg-white/[0.05] active:scale-[0.998] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-background focus-visible:ring-2';
   const cls = `${base} ${className ?? ''}`;
 
   if (onClick) {

@@ -1,8 +1,9 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchFeed } from '@/lib/api/feed';
 import type { FeedItem } from '@/lib/api/types';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
@@ -12,10 +13,16 @@ import { ShortcutHelp } from '@/components/ShortcutHelp';
 import { VirtualizedFeedList } from '@/components/VirtualizedFeedList';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
+  flattenFeedPages,
+  getFeedNextPageParam,
+  getFeedTotalCount,
+} from '@/lib/feed-infinite';
+import {
   SEVERITY_OPTIONS,
   CATEGORY_OPTIONS,
   TOPIC_OPTIONS,
 } from '@/lib/constants';
+import { getPreference, setPreference } from '@/lib/preferences';
 import { getItemSeverity, itemMatchesTopic } from '@/lib/utils';
 
 const FEED_TYPES = ['all', 'news', 'tweet', 'telegram'] as const;
@@ -38,7 +45,7 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 rounded-md px-2.5 py-1 text-[10px] font-medium transition-all duration-150 border ${
+      className={`shrink-0 rounded-md px-2.5 py-1.5 md:py-1 text-[10px] font-medium transition-all duration-150 border min-h-[36px] md:min-h-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         active
           ? className ?? 'bg-white/[0.1] text-zinc-100 border-white/[0.12]'
           : 'bg-transparent text-zinc-500 border-transparent hover:bg-white/[0.06] hover:text-zinc-300'
@@ -55,6 +62,15 @@ function FeedContent() {
   const typeParam = searchParams.get('type') as FeedTypeFilter | null;
   const type =
     typeParam && FEED_TYPES.includes(typeParam) ? typeParam : 'all';
+
+  // Restore feed type preference when landing on /feed with no type (once per session)
+  useEffect(() => {
+    if (type !== 'all' || typeParam) return;
+    const stored = getPreference('feedType');
+    if (stored && stored !== 'all' && FEED_TYPES.includes(stored)) {
+      router.replace(`/feed?type=${stored}`);
+    }
+  }, [type, typeParam, router]);
 
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -88,22 +104,13 @@ function FeedContent() {
       fetchFeed({ page: pageParam, count: PAGE_SIZE, type: apiType }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) =>
-      lastPage.items.length >= PAGE_SIZE
-        ? allPages.length + 1
-        : undefined,
+      getFeedNextPageParam(lastPage, allPages, PAGE_SIZE),
   });
 
-  const rawItems = useMemo(() => {
-    if (!data) return [];
-    const seen = new Set<string>();
-    return data.pages
-      .flatMap((p) => p.items)
-      .filter((i) => {
-        if (seen.has(i.id)) return false;
-        seen.add(i.id);
-        return true;
-      });
-  }, [data, type]);
+  const rawItems = useMemo(
+    () => flattenFeedPages(data?.pages),
+    [data?.pages],
+  );
 
   const allItems = useMemo(() => {
     let items = rawItems;
@@ -127,7 +134,7 @@ function FeedContent() {
     return items;
   }, [rawItems, severity, category, topic]);
 
-  const totalCount = data?.pages?.[0]?.total ?? 0;
+  const totalCount = getFeedTotalCount(data?.pages);
 
   const { showHelp, setShowHelp } = useKeyboardShortcuts({
     onJ: () => {
@@ -144,6 +151,7 @@ function FeedContent() {
 
   const updateType = useCallback(
     (newType: FeedTypeFilter) => {
+      setPreference('feedType', newType);
       const params = new URLSearchParams(searchParams.toString());
       if (newType === 'all') params.delete('type');
       else params.set('type', newType);
@@ -187,7 +195,7 @@ function FeedContent() {
                 key={t}
                 type="button"
                 onClick={() => updateType(t)}
-                className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all duration-150 active:scale-[0.98] ${
+                className={`rounded-lg px-3 py-2 md:py-1.5 text-[11px] font-medium transition-all duration-150 active:scale-[0.98] min-h-[40px] md:min-h-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   type === t
                     ? 'bg-white/[0.1] text-zinc-100'
                     : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200'
@@ -202,7 +210,7 @@ function FeedContent() {
               <button
                 type="button"
                 onClick={() => setFiltersOpen(!filtersOpen)}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-colors border ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 md:py-1 text-[10px] font-medium transition-colors border min-h-[36px] md:min-h-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   filtersOpen || activeFilterCount > 0
                     ? 'bg-accent/10 text-accent border-accent/20'
                     : 'bg-white/[0.04] text-zinc-400 border-transparent hover:bg-white/[0.08] hover:text-zinc-200'
@@ -300,7 +308,7 @@ function FeedContent() {
           {severity && (
             <button
               onClick={() => setSeverity(null)}
-              className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2 py-0.5 text-[10px] text-zinc-300 hover:bg-white/[0.12] transition-colors"
+              className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2 py-0.5 text-[10px] text-zinc-300 hover:bg-white/[0.12] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {SEVERITY_OPTIONS.find((s) => s.value === severity)?.label}
               <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -311,7 +319,7 @@ function FeedContent() {
           {category && (
             <button
               onClick={() => setCategory(null)}
-              className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2 py-0.5 text-[10px] text-zinc-300 hover:bg-white/[0.12] transition-colors"
+              className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2 py-0.5 text-[10px] text-zinc-300 hover:bg-white/[0.12] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {category}
               <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -322,7 +330,7 @@ function FeedContent() {
           {topic && (
             <button
               onClick={() => setTopic(null)}
-              className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2 py-0.5 text-[10px] text-zinc-300 hover:bg-white/[0.12] transition-colors"
+              className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2 py-0.5 text-[10px] text-zinc-300 hover:bg-white/[0.12] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {TOPIC_OPTIONS.find((t) => t.slug === topic)?.label}
               <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -332,7 +340,7 @@ function FeedContent() {
           )}
           <button
             onClick={clearFilters}
-            className="ml-auto text-[9px] text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="ml-auto text-[9px] text-zinc-500 hover:text-zinc-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
           >
             Clear all
           </button>
@@ -340,14 +348,20 @@ function FeedContent() {
       )}
 
       {/* Content */}
-      <div className="flex-1 min-h-0 flex flex-col" data-walkthrough="feed-content">
+      <div
+        className="flex-1 min-h-0 flex flex-col"
+        data-walkthrough="feed-content"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-label={`Feed with ${allItems.length} signals`}
+      >
       {!showList && (
         <div className="flex-1 overflow-y-auto p-4">
           {error && (
             <div className="mb-4">
               <QueryErrorBanner
                 message={`Error loading feed: ${String(error)}`}
-                onRetry={() => refetch()}
+                onRetry={() => refetch().then(() => toast.success('Feed refreshed'))}
               />
             </div>
           )}

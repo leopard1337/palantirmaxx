@@ -2,11 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { fetchMovers } from '@/lib/api/movers';
 import type { FeedItem, MoverEntry } from '@/lib/api/types';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { MoversTableSkeleton } from '@/components/LoadingSkeleton';
 import { MoverCard } from '@/components/MoverCard';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 type SortKey = 'rank' | 'change' | 'volume' | 'recent';
@@ -91,7 +93,7 @@ export default function MoversPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-white/[0.06] px-5 py-3.5 shrink-0">
+      <div className="border-b border-white/[0.06] px-4 md:px-5 py-3.5 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-[15px] font-semibold text-zinc-100">
@@ -103,9 +105,9 @@ export default function MoversPage() {
           </div>
           <button
             type="button"
-            onClick={() => refetch()}
+            onClick={() => refetch().then(() => toast.success('Movers refreshed'))}
             disabled={isFetching}
-            className="cursor-pointer rounded-lg border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-[11px] font-medium text-zinc-300 transition-all hover:border-white/[0.2] hover:bg-white/[0.1] hover:text-zinc-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white/[0.05]"
+            className="cursor-pointer rounded-lg border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-[11px] font-medium text-zinc-300 transition-all hover:border-white/[0.2] hover:bg-white/[0.1] hover:text-zinc-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {isFetching ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -136,7 +138,7 @@ export default function MoversPage() {
         )}
 
         {/* Sort + Filter controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1">
             <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mr-1">Sort</span>
             {SORT_OPTIONS.map((opt) => (
@@ -162,7 +164,7 @@ export default function MoversPage() {
                 key={opt.value}
                 type="button"
                 onClick={() => setImpact(opt.value)}
-                className={`cursor-pointer rounded-md border px-2.5 py-1.5 text-[10px] font-medium transition-all ${
+                className={`cursor-pointer rounded-md border px-2.5 py-2 md:py-1.5 text-[10px] font-medium transition-all min-h-[36px] md:min-h-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   impact === opt.value
                     ? 'border-accent/40 bg-accent/10 text-accent'
                     : 'border-transparent bg-white/[0.03] text-zinc-500 hover:border-white/[0.12] hover:bg-white/[0.08] hover:text-zinc-300 active:scale-[0.98]'
@@ -176,7 +178,8 @@ export default function MoversPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <PullToRefresh onRefresh={() => refetch().then(() => toast.success('Movers refreshed'))}>
+      <div className="p-4">
         {error && (
           <QueryErrorBanner
             message={`Error loading movers: ${String(error)}`}
@@ -206,7 +209,7 @@ export default function MoversPage() {
         )}
 
         {!isLoading && !error && movers.length > 0 && (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2.5 stagger-list">
             {movers.map((mover) => (
               <MoverCard
                 key={`mover-${mover.rank}-${mover.feed_item.id}`}
@@ -217,6 +220,7 @@ export default function MoversPage() {
           </div>
         )}
       </div>
+      </PullToRefresh>
 
       <FeedDetailDrawer
         item={selectedItem}

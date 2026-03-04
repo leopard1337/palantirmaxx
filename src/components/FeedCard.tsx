@@ -9,6 +9,7 @@ import {
   getFeedTitle,
   getFeedSourceLabel,
   formatTimeAgo,
+  getFeedTimestamp,
   getCountryFlag,
 } from '@/lib/utils';
 import { Card, CardHeader, CardBody, CardFooter } from './ui/Card';
@@ -43,9 +44,9 @@ export const FeedCard = memo(function FeedCard({
     <Card onClick={onClick} className="w-full">
       <CardHeader>
         <div className="flex items-center gap-1.5 min-w-0">
-          {item.tweet?.user.pfp && (
+          {item.tweet?.user?.pfp && (
             <Image
-              src={item.tweet.user.pfp}
+              src={item.tweet?.user?.pfp ?? ''}
               alt=""
               width={16}
               height={16}
@@ -68,7 +69,7 @@ export const FeedCard = memo(function FeedCard({
             </span>
           )}
           <span className="text-[10px] text-zinc-500 tabular-nums shrink-0 ml-auto">
-            {formatTimeAgo(item.timestamp)}
+            {formatTimeAgo(getFeedTimestamp(item))}
           </span>
         </div>
       </CardHeader>

@@ -4,26 +4,26 @@ export function FeedListSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-3"
+          className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-3 overflow-hidden relative"
         >
           <div className="flex items-center gap-2 mb-2">
             <div
-              className="h-1.5 w-12 rounded bg-zinc-800/40 animate-pulse"
-              style={{ animationDelay: `${i * 60}ms` }}
+              className="h-1.5 w-12 rounded bg-zinc-800/40 animate-shimmer"
+              style={{ animationDelay: `${i * 100}ms` }}
             />
             <div
-              className="h-1.5 w-20 rounded bg-zinc-800/25 animate-pulse"
-              style={{ animationDelay: `${i * 60 + 30}ms` }}
+              className="h-1.5 w-20 rounded bg-zinc-800/25 animate-shimmer"
+              style={{ animationDelay: `${i * 100 + 50}ms` }}
             />
           </div>
           <div className="flex flex-col gap-1.5">
             <div
-              className="h-2 w-full rounded bg-zinc-800/30 animate-pulse"
-              style={{ animationDelay: `${i * 60 + 60}ms` }}
+              className="h-2 w-full rounded bg-zinc-800/30 animate-shimmer"
+              style={{ animationDelay: `${i * 100 + 100}ms` }}
             />
             <div
-              className="h-2 w-[75%] rounded bg-zinc-800/20 animate-pulse"
-              style={{ animationDelay: `${i * 60 + 90}ms` }}
+              className="h-2 w-[75%] rounded bg-zinc-800/20 animate-shimmer"
+              style={{ animationDelay: `${i * 100 + 150}ms` }}
             />
           </div>
         </div>

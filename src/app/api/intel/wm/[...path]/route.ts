@@ -7,6 +7,21 @@ const ALLOWED_PREFIXES = [
   '/intelligence/',
   '/bootstrap',
 ];
+const ALLOWED_QUERY_KEYS = new Set([
+  'limit', 'page', 'offset', 'series_id', 'country', 'country_code',
+  'start', 'end', 'format', 'sort', 'order', 'ids', 'coins',
+]);
+
+function filterParams(params: URLSearchParams): URLSearchParams {
+  const filtered = new URLSearchParams();
+  params.forEach((v, k) => {
+    const key = k.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (key && ALLOWED_QUERY_KEYS.has(key) && v.length < 200) {
+      filtered.set(k, v);
+    }
+  });
+  return filtered;
+}
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +38,9 @@ export async function GET(
   }
 
   const url = new URL(fullPath, WM_BASE);
-  request.nextUrl.searchParams.forEach((v, k) => url.searchParams.set(k, v));
+  filterParams(request.nextUrl.searchParams).forEach((v, k) =>
+    url.searchParams.set(k, v),
+  );
 
   try {
     const res = await fetch(url.toString(), {

@@ -30,7 +30,7 @@ export function getFeedTitle(item: FeedItem): string {
 }
 
 export function getFeedSourceLabel(item: FeedItem): string {
-  if (item.tweet) return `@${item.tweet.user.handle}`;
+  if (item.tweet) return `@${item.tweet.user?.handle ?? 'unknown'}`;
   if (item.telegram) return item.telegram.channel;
   if (item.news) return item.news.source;
   return 'OSINT';
@@ -49,9 +49,30 @@ export function formatVolume(vol: number): string {
   return `$${vol.toFixed(0)}`;
 }
 
-export function formatTimeAgo(timestampMs: number): string {
+/** Normalize API timestamp to ms. Glint/APIs often use Unix seconds (10 digits). */
+function toTimestampMs(value: unknown): number {
+  if (value == null) return Date.now();
+  const n = typeof value === 'string' ? parseFloat(value) : Number(value);
+  if (!Number.isFinite(n) || n <= 0) return Date.now();
+  if (n < 1e12) return n * 1000;
+  return n;
+}
+
+/** Best timestamp for a feed item in ms — prefers source-specific fields. */
+export function getFeedTimestamp(item: FeedItem | null | undefined): number {
+  if (!item || typeof item !== 'object') return Date.now();
+  const raw =
+    item.tweet?.created_at ??
+    item.news?.published_at ?? item.news?.timestamp ??
+    item.telegram?.timestamp ??
+    item.timestamp;
+  return toTimestampMs(raw);
+}
+
+export function formatTimeAgo(timestamp: number | string | unknown): string {
+  const timestampMs = toTimestampMs(timestamp);
   const diffMs = Date.now() - timestampMs;
-  const diffSec = Math.floor(diffMs / 1000);
+  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
   if (diffSec < 60) return `${diffSec}s ago`;
   const diffMin = Math.floor(diffSec / 60);
   if (diffMin < 60) return `${diffMin}m ago`;
