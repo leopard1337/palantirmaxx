@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchFlights, fetchCountryFeed } from '@/lib/api/flights';
@@ -7,6 +8,7 @@ import { fetchFeed } from '@/lib/api/feed';
 import type { CountryFeedData, FeedItem, FlightData } from '@/lib/api/types';
 import { getFeedBody } from '@/lib/utils';
 import { detectCountriesFromText } from '@/lib/detect-country';
+import { useMediaQueryMd } from '@/hooks/useMediaQuery';
 import { GlintGlobe } from '@/components/GlintGlobe';
 import { GlobeSidePanel } from '@/components/GlobeSidePanel';
 import { GlobeCountryFeedPanel } from '@/components/GlobeCountryFeedPanel';
@@ -38,6 +40,7 @@ function aggregateCountriesFromFeed(items: FeedItem[]): CountryFeedData[] {
 }
 
 export default function GlobePage() {
+  const isDesktop = useMediaQueryMd();
   const [geoJson, setGeoJson] = useState<Record<string, unknown> | null>(null);
   const [selectedFlight, setSelectedFlight] = useState<FlightData | null>(null);
   const [selectedCountryFeed, setSelectedCountryFeed] = useState<{
@@ -96,6 +99,25 @@ export default function GlobePage() {
     },
     [],
   );
+
+  if (!isDesktop) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 px-6">
+        <p className="text-center text-[13px] text-zinc-400">
+          The Globe feature is not optimized for mobile screens.
+        </p>
+        <p className="text-center text-[11px] text-zinc-500">
+          Use a tablet or desktop for the best experience.
+        </p>
+        <Link
+          href="/"
+          className="rounded-lg bg-accent px-4 py-2.5 text-[12px] font-semibold text-black hover:bg-accent/90 transition-colors"
+        >
+          Go to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">

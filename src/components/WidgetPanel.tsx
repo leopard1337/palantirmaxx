@@ -7,6 +7,7 @@ import {
   type PanelConfig,
   WIDGET_CATALOG,
 } from '@/lib/dashboard-store';
+import { useMediaQueryMd } from '@/hooks/useMediaQuery';
 import type { FeedItem, EventData } from '@/lib/api/types';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { CryptoStablecoinWidget } from './widgets/CryptoStablecoinWidget';
@@ -31,9 +32,11 @@ const CameraFeedWidget = dynamic(
 function WidgetSelector({
   onSelect,
   onClose,
+  hideGlobe,
 }: {
   onSelect: (type: WidgetType) => void;
   onClose: () => void;
+  hideGlobe?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,7 +48,8 @@ function WidgetSelector({
     return () => document.removeEventListener('mousedown', handle);
   }, [onClose]);
 
-  const groups = WIDGET_CATALOG.reduce<Record<string, typeof WIDGET_CATALOG>>(
+  const catalog = hideGlobe ? WIDGET_CATALOG.filter((w) => w.type !== 'globe') : WIDGET_CATALOG;
+  const groups = catalog.reduce<Record<string, typeof WIDGET_CATALOG>>(
     (acc, item) => {
       (acc[item.group] ??= []).push(item);
       return acc;
@@ -124,10 +128,12 @@ function WidgetContent({
   type,
   onSelectFeedItem,
   onSelectEvent,
+  isMobile,
 }: {
   type: WidgetType;
   onSelectFeedItem?: (item: FeedItem) => void;
   onSelectEvent?: (event: EventData) => void;
+  isMobile?: boolean;
 }) {
   if (type.startsWith('feed-')) {
     const feedType = type.replace('feed-', '') as
@@ -148,6 +154,14 @@ function WidgetContent({
     case 'movers':
       return <MoversWidget onSelectItem={onSelectFeedItem} />;
     case 'globe':
+      if (isMobile) {
+        return (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
+            <p className="text-[11px] text-zinc-500">Globe is not available on mobile.</p>
+            <p className="text-[10px] text-zinc-600">Use a larger screen for the best experience.</p>
+          </div>
+        );
+      }
       return <FlightGlobeWidget />;
     case 'intel-crypto':
       return <CryptoStablecoinWidget />;
@@ -178,6 +192,7 @@ export function WidgetPanel({
   onSelectEvent?: (event: EventData) => void;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const isDesktop = useMediaQueryMd();
 
   const handleSelect = (type: WidgetType) => {
     onSetWidget(type);
@@ -214,6 +229,7 @@ export function WidgetPanel({
           <WidgetSelector
             onSelect={handleSelect}
             onClose={() => setSelectorOpen(false)}
+            hideGlobe={!isDesktop}
           />
         )}
       </div>
@@ -278,6 +294,7 @@ export function WidgetPanel({
               type={panel.widget}
               onSelectFeedItem={onSelectFeedItem}
               onSelectEvent={onSelectEvent}
+              isMobile={!isDesktop}
             />
           </WidgetErrorBoundary>
         </div>
@@ -286,6 +303,7 @@ export function WidgetPanel({
         <WidgetSelector
           onSelect={handleSelect}
           onClose={() => setSelectorOpen(false)}
+          hideGlobe={!isDesktop}
         />
       )}
     </div>

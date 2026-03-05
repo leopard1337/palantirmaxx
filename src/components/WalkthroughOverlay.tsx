@@ -11,9 +11,10 @@ export function WalkthroughOverlay() {
   const ctx = useWalkthrough();
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
 
+  const steps = ctx?.steps ?? WALKTHROUGH_STEPS;
   const active = ctx?.active ?? false;
   const step = ctx?.step ?? 0;
-  const config = WALKTHROUGH_STEPS[step] ?? null;
+  const config = steps[step] ?? null;
   const highlightKey = config?.highlight ?? null;
 
   useEffect(() => {
@@ -143,7 +144,7 @@ export function WalkthroughOverlay() {
     );
   };
 
-  const totalSteps = WALKTHROUGH_STEPS.length;
+  const totalSteps = steps.length;
   const stepLabel = `${step + 1}/${totalSteps}`;
 
   return (

@@ -1,15 +1,18 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   WALKTHROUGH_STEPS,
   WALKTHROUGH_STORAGE_KEY,
 } from '@/lib/walkthrough';
+import { useMediaQueryMd } from '@/hooks/useMediaQuery';
 
+type WalkthroughStep = (typeof WALKTHROUGH_STEPS)[number];
 type WalkthroughContextValue = {
   active: boolean;
   step: number;
+  steps: WalkthroughStep[];
   goNext: () => void;
   goBack: () => void;
   skip: () => void;
@@ -30,9 +33,18 @@ function isFirstVisit(): boolean {
 export function WalkthroughProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const isDesktop = useMediaQueryMd();
   const [active, setActive] = useState(false);
   const [step, setStep] = useState(0);
   const [mounted, setMounted] = useState(false);
+
+  const steps = useMemo(
+    () =>
+      isDesktop
+        ? WALKTHROUGH_STEPS
+        : WALKTHROUGH_STEPS.filter((s) => !('hideOnMobile' in s && s.hideOnMobile)),
+    [isDesktop]
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -96,6 +108,7 @@ export function WalkthroughProvider({ children }: { children: React.ReactNode })
   const value: WalkthroughContextValue = {
     active,
     step,
+    steps,
     goNext,
     goBack,
     skip,

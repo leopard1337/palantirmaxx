@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWalkthrough } from '@/context/WalkthroughContext';
+import { useMediaQueryMd } from '@/hooks/useMediaQuery';
 import { fetchFeed } from '@/lib/api/feed';
 import { fetchFlights } from '@/lib/api/flights';
 import { fetchEvents } from '@/lib/api/events';
@@ -26,6 +27,7 @@ export function TopBar() {
   const pathname = usePathname();
   const walkthrough = useWalkthrough();
   const queryClient = useQueryClient();
+  const isDesktop = useMediaQueryMd();
 
   const prefetchedRef = useRef<Set<string>>(new Set());
   const prefetchRoute = (href: string) => {
@@ -102,7 +104,7 @@ export function TopBar() {
         className="flex-1 flex items-center md:justify-center justify-start gap-2 md:gap-1 min-w-0 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory px-3 md:px-0 py-1.5 md:py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]"
         aria-label="Main navigation"
       >
-        {nav.map((item) => {
+        {nav.filter((item) => item.href !== '/globe' || isDesktop).map((item) => {
           const active = item.exact
             ? pathname === item.href
             : pathname === item.href ||

@@ -40,6 +40,7 @@ export const WALKTHROUGH_STEPS = [
     route: '/globe',
     text: 'Visualize country mentions, active flights, and conflict zones. Toggle live camera feeds for on-the-ground coverage.',
     highlight: null,
+    hideOnMobile: true,
   },
   {
     route: '/markets',

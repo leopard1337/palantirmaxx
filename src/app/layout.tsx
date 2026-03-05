@@ -4,6 +4,7 @@ import { Providers } from '@/components/Providers';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import { TopBar } from '@/components/TopBar';
 import { WalkthroughOverlay } from '@/components/WalkthroughOverlay';
+import { SplashScreen } from '@/components/SplashScreen';
 import './globals.css';
 
 const jetbrains = JetBrains_Mono({
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${jetbrains.variable} min-h-screen bg-background text-foreground antialiased font-[family-name:var(--font-jetbrains)]`}
       >
         <Providers>
+            <SplashScreen />
           <a
             href="#main-content"
             className="skip-to-content"
