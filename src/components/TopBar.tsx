@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWalkthrough } from '@/context/WalkthroughContext';
 import { fetchFeed } from '@/lib/api/feed';
@@ -65,22 +65,42 @@ export function TopBar() {
 
   const feedCount = feedData?.total ?? 0;
   const flightCount = flights?.length ?? 0;
+  const navRef = useRef<HTMLNavElement>(null);
+
+  // Scroll active nav item into view on mobile when route changes
+  useEffect(() => {
+    const activeEl = navRef.current?.querySelector('[data-nav-active="true"]');
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [pathname]);
 
   return (
-    <header className="flex h-12 shrink-0 items-center border-b border-[var(--border)] bg-background px-4 md:px-5">
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 shrink-0 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">
-        <span className="text-[14px] font-bold text-foreground tracking-tight">
-          PALANTIR
-        </span>
-        <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-accent/10 text-[9px] font-bold text-accent tracking-wider">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-          LIVE
-        </span>
-      </Link>
+    <header className="flex flex-col md:flex-row md:h-12 shrink-0 border-b border-[var(--border)] bg-background">
+      {/* Row 1 on mobile: logo + feed count. Desktop: inline with nav */}
+      <div className="flex h-11 md:h-auto shrink-0 items-center justify-between md:justify-start px-3 md:px-5 min-w-0 border-b md:border-b-0 border-white/[0.06]">
+        <Link href="/" className="flex items-center gap-2 shrink-0 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">
+          <span className="text-[13px] md:text-[14px] font-bold text-foreground tracking-tight">
+            PALANTIR
+          </span>
+          <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-accent/10 text-[9px] font-bold text-accent tracking-wider">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+            LIVE
+          </span>
+        </Link>
+        {feedCount > 0 && (
+          <span className="md:hidden text-[10px] font-medium text-zinc-400">
+            <span className="text-zinc-200 tabular-nums">{feedCount}</span>
+          </span>
+        )}
+      </div>
 
-      {/* Centered Nav - scrollable on mobile */}
-      <nav className="flex-1 flex items-center justify-center gap-1 min-w-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Main navigation">
+      {/* Nav - full-width horizontal slider on mobile */}
+      <nav
+        ref={navRef}
+        className="flex-1 flex items-center md:justify-center justify-start gap-2 md:gap-1 min-w-0 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory px-3 md:px-0 py-1.5 md:py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]"
+        aria-label="Main navigation"
+      >
         {nav.map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -92,7 +112,8 @@ export function TopBar() {
               key={item.href}
               href={item.href}
               onMouseEnter={() => prefetchRoute(item.href)}
-              className={`relative rounded-md px-2.5 md:px-3 py-2 md:py-1.5 min-h-[44px] md:min-h-0 flex items-center text-[12px] md:text-[13px] transition-all duration-200 shrink-0 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+              data-nav-active={active ? 'true' : undefined}
+              className={`relative rounded-md px-3.5 md:px-3 py-2.5 md:py-1.5 min-h-[44px] md:min-h-0 flex items-center text-[12px] md:text-[13px] transition-all duration-200 shrink-0 snap-center active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 active
                   ? 'text-foreground font-medium'
                   : 'text-zinc-500 hover:text-zinc-200'
@@ -107,13 +128,13 @@ export function TopBar() {
         })}
       </nav>
 
-      {/* Right: counters + replay tutorial (dev) */}
-      <div className="flex items-center gap-4 shrink-0">
+      {/* Right: counters + replay - hidden on mobile (nav gets full width) */}
+      <div className="hidden md:flex items-center gap-4 shrink-0 md:pr-5">
         {walkthrough && (
           <button
             type="button"
             onClick={walkthrough.replay}
-            className="rounded px-2 py-1 text-[10px] font-medium text-zinc-500 hover:text-accent hover:bg-accent/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="hidden md:inline-flex rounded px-2 py-1 text-[10px] font-medium text-zinc-500 hover:text-accent hover:bg-accent/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title="Replay tutorial"
           >
             Replay tutorial
