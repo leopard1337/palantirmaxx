@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   try {
     const url = `${YAHOO_CHART}/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'Palantir-Intel/1.0 (https://github.com)' },
+      headers: { 'User-Agent': 'Raven-Intel/1.0 (https://github.com)' },
       next: { revalidate: 300 },
     });
     if (!res.ok) throw new Error(`Yahoo ${res.status}`);

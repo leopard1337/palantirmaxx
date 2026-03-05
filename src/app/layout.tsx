@@ -14,7 +14,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Palantir - Intelligence Terminal',
+  title: 'Raven - Intelligence Terminal',
   description: 'Real-time prediction market intelligence',
 };
 

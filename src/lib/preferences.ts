@@ -1,6 +1,6 @@
 'use client';
 
-const STORAGE_KEY = 'palantir-preferences';
+const STORAGE_KEY = 'raven-preferences';
 
 export interface StoredPreferences {
   feedType?: 'all' | 'news' | 'tweet' | 'telegram';

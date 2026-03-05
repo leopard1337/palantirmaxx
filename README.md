@@ -1,4 +1,4 @@
-# Operation Palantir
+# Operation Raven
 
 Real-time prediction market intelligence terminal. Aggregates feed signals (news/X/Telegram/OSINT), events by category, and top movers via the Glint API.
 

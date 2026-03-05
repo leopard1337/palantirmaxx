@@ -6,7 +6,7 @@ const WEATHER_URL = 'https://api.weather.gov/alerts/active';
 export async function GET() {
   try {
     const res = await fetch(WEATHER_URL, {
-      headers: { Accept: 'application/json', 'User-Agent': 'Palantir-Intel/1.0' },
+      headers: { Accept: 'application/json', 'User-Agent': 'Raven-Intel/1.0' },
       next: { revalidate: 300 },
     });
     if (!res.ok) throw new Error(`Weather ${res.status}`);

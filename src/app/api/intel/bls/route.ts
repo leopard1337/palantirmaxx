@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'Palantir-Intel/1.0 (https://github.com)',
+          'User-Agent': 'Raven-Intel/1.0 (https://github.com)',
         },
         body,
         next: { revalidate: 3600 },
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
   // Fallback: v1 GET (no key, ~25 req/day per IP)
   try {
-    const headers = { 'User-Agent': 'Palantir-Intel/1.0 (https://github.com)' };
+    const headers = { 'User-Agent': 'Raven-Intel/1.0 (https://github.com)' };
     const results = await Promise.all(
       ids.map((id) => fetch(`${BLS_V1}/${id}`, { headers }).then((r) => r.json())),
     );

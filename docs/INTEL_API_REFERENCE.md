@@ -1,6 +1,6 @@
 # Intel API Reference
 
-Alternative and fallback APIs for each data type in Operation Palantir. Sources are ordered by reliability and ease of use.
+Alternative and fallback APIs for each data type in Operation Raven. Sources are ordered by reliability and ease of use.
 
 ---
 

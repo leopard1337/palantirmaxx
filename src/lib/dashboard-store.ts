@@ -41,7 +41,7 @@ const DEFAULT_LAYOUT: DashboardLayout = {
   ],
 };
 
-const STORAGE_KEY = 'palantir-dashboard-v2';
+const STORAGE_KEY = 'raven-dashboard-v2';
 
 export function useDashboardLayout() {
   const [layout, setLayout] = useState<DashboardLayout>(DEFAULT_LAYOUT);
