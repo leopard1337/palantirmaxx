@@ -1,13 +1,13 @@
-# Operation Raven
+# Operation Quantis
 
-Real-time prediction market intelligence terminal. Aggregates feed signals (news/X/Telegram/OSINT), events by category, and top movers via the Glint API.
+Real-time prediction market intelligence terminal. Aggregates feed signals (news/X/Telegram/OSINT), events by category, and top movers via the Quantis API.
 
 ## Setup
 
 1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env.local` and add your Glint API Bearer token:
+2. Copy `.env.example` to `.env.local` and add your Quantis API Bearer token:
    ```
-   GLINT_BEARER=your_token_here
+   QUANTIS_BEARER=your_token_here
    ```
 3. For Intel widgets: add `FRED_API_KEY` (optional: `BLS_REGISTRATION_KEY`)
 4. Run dev: `npm run dev`
@@ -17,7 +17,7 @@ Real-time prediction market intelligence terminal. Aggregates feed signals (news
 
 1. Push to GitHub and import the repo in [Vercel](https://vercel.com)
 2. Add Environment Variables in the Vercel dashboard:
-   - `GLINT_BEARER` (required for feed, events, movers, flights)
+   - `QUANTIS_BEARER` (required for feed, events, movers, flights)
    - `FRED_API_KEY` (optional, for economic data)
    - `BLS_REGISTRATION_KEY` (optional, improves BLS rate limits)
 3. Deploy — Vercel auto-detects Next.js

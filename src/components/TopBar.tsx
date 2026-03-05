@@ -6,6 +6,8 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWalkthrough } from '@/context/WalkthroughContext';
 import { useMediaQueryMd } from '@/hooks/useMediaQuery';
+import { useWalletAccess, isRouteGated } from '@/context/WalletContext';
+import { ConnectWalletButton } from '@/components/ConnectWalletButton';
 import { fetchFeed } from '@/lib/api/feed';
 import { fetchFlights } from '@/lib/api/flights';
 import { fetchEvents } from '@/lib/api/events';
@@ -82,20 +84,23 @@ export function TopBar() {
       {/* Row 1 on mobile: logo + feed count. Desktop: inline with nav */}
       <div className="flex h-11 md:h-auto shrink-0 items-center justify-between md:justify-start px-3 md:px-5 min-w-0 border-b md:border-b-0 border-white/[0.06]">
         <Link href="/" className="flex items-center gap-2 shrink-0 min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded">
-          <img src="/raven-logo.png" alt="Raven" className="h-7 w-auto" />
+          <img src="/quantis-logo.png" alt="Quantis" className="h-7 w-auto" />
           <span className="text-[13px] md:text-[14px] font-bold text-foreground tracking-tight">
-            RAVEN
+            Quantis
           </span>
           <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-accent/10 text-[9px] font-bold text-accent tracking-wider">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
             LIVE
           </span>
         </Link>
-        {feedCount > 0 && (
-          <span className="md:hidden text-[10px] font-medium text-zinc-400">
-            <span className="text-zinc-200 tabular-nums">{feedCount}</span>
-          </span>
-        )}
+        <div className="flex items-center gap-2 md:hidden">
+          <ConnectWalletButton />
+          {feedCount > 0 && (
+            <span className="text-[10px] font-medium text-zinc-400">
+              <span className="text-zinc-200 tabular-nums">{feedCount}</span>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Nav - full-width horizontal slider on mobile */}
@@ -132,7 +137,8 @@ export function TopBar() {
       </nav>
 
       {/* Right: counters + replay - hidden on mobile (nav gets full width) */}
-      <div className="hidden md:flex items-center gap-4 shrink-0 md:pr-5">
+      <div className="hidden md:flex items-center gap-3 shrink-0 md:pr-5">
+        <ConnectWalletButton />
         {walkthrough && (
           <button
             type="button"

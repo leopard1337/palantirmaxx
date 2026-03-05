@@ -1,6 +1,6 @@
 # Intel API Reference
 
-Alternative and fallback APIs for each data type in Operation Raven. Sources are ordered by reliability and ease of use.
+Alternative and fallback APIs for each data type in Operation Quantis. Sources are ordered by reliability and ease of use.
 
 ---
 
@@ -129,7 +129,7 @@ Alternative and fallback APIs for each data type in Operation Raven. Sources are
 
 | Source | URL | Key Required | Notes |
 |--------|-----|--------------|-------|
-| WorldMonitor | `https://api.worldmonitor.app/api/telegram-feed?limit=50` | No | Merged with Glint feed |
+| WorldMonitor | `https://api.worldmonitor.app/api/telegram-feed?limit=50` | No | Merged with Quantis feed |
 
 ---
 

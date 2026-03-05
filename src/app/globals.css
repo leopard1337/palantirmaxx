@@ -67,22 +67,6 @@ body {
   50% { opacity: 0.5; }
 }
 
-@keyframes splash-text-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes splash-drop-in {
-  from {
-    opacity: 0;
-    transform: translateY(-32px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* Skip link - visible only when focused */
 .skip-to-content {
   position: absolute;

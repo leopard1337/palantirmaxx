@@ -9,6 +9,7 @@ import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
 import { MoversTableSkeleton } from '@/components/LoadingSkeleton';
 import { MoverCard } from '@/components/MoverCard';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { GateGuard } from '@/components/GateGuard';
 import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 type SortKey = 'rank' | 'change' | 'volume' | 'recent';
@@ -28,7 +29,7 @@ const IMPACT_FILTERS: { value: ImpactFilter; label: string }[] = [
   { value: 'low', label: 'Low' },
 ];
 
-export default function MoversPage() {
+function MoversContent() {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['movers'],
     queryFn: fetchMovers,
@@ -227,5 +228,13 @@ export default function MoversPage() {
         onClose={() => setSelectedItem(null)}
       />
     </div>
+  );
+}
+
+export default function MoversPage() {
+  return (
+    <GateGuard>
+      <MoversContent />
+    </GateGuard>
   );
 }

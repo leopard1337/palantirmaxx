@@ -1,6 +1,6 @@
 # Intelligence Integration
 
-All new data sources integrated into Operation Raven. No API keys required for the listed endpoints.
+All new data sources integrated into Operation Quantis. No API keys required for the listed endpoints.
 
 **Alternative APIs (no WorldMonitor dependency):**
 - **Energy**: OilPrice API demo (`/api/intel/oilprice`) — Brent, WTI, natural gas, gasoline, gold. 20 req/hr.

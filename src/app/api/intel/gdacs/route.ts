@@ -6,7 +6,7 @@ const GDACS_URL = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP';
 export async function GET() {
   try {
     const res = await fetch(GDACS_URL, {
-      headers: { Accept: 'application/json', 'User-Agent': 'Raven-Intel/1.0' },
+      headers: { Accept: 'application/json', 'User-Agent': 'Quantis-Intel/1.0' },
       next: { revalidate: 300 },
     });
     if (!res.ok) throw new Error(`GDACS ${res.status}`);

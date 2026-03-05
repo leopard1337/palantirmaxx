@@ -1,9 +1,9 @@
-export const WALKTHROUGH_STORAGE_KEY = 'raven-walkthrough-done';
+export const WALKTHROUGH_STORAGE_KEY = 'quantis-walkthrough-done';
 
 export const WALKTHROUGH_STEPS = [
   {
     route: '/',
-    text: 'Welcome to RAVEN — your real-time intelligence terminal. Let\'s walk you through the key features.',
+    text: 'Welcome to QUANTIS — your real-time intelligence terminal. Let\'s walk you through the key features.',
     highlight: null as string | null,
   },
   {

@@ -49,7 +49,7 @@ export function formatVolume(vol: number): string {
   return `$${vol.toFixed(0)}`;
 }
 
-/** Normalize API timestamp to ms. Glint/APIs often use Unix seconds (10 digits). */
+/** Normalize API timestamp to ms. APIs often use Unix seconds (10 digits). */
 function toTimestampMs(value: unknown): number {
   if (value == null) return Date.now();
   const n = typeof value === 'string' ? parseFloat(value) : Number(value);

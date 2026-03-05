@@ -1,6 +1,6 @@
 'use client';
 
-const STORAGE_KEY = 'raven-preferences';
+const STORAGE_KEY = 'quantis-preferences';
 
 export interface StoredPreferences {
   feedType?: 'all' | 'news' | 'tweet' | 'telegram';

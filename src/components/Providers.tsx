@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Component, useState, type ReactNode, type ErrorInfo } from 'react';
 import { Toaster } from 'sonner';
 import { WalkthroughProvider } from '@/context/WalkthroughContext';
+import { SolanaWalletProvider } from './SolanaWalletProvider';
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -64,16 +65,18 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <WalkthroughProvider>
-          {children}
-          <Toaster
-            theme="dark"
-            position="bottom-center"
-            toastOptions={{
-              className: 'bg-surface border border-white/[0.08] text-zinc-200 text-[11px]',
-            }}
-          />
-        </WalkthroughProvider>
+        <SolanaWalletProvider>
+          <WalkthroughProvider>
+            {children}
+            <Toaster
+              theme="dark"
+              position="bottom-center"
+              toastOptions={{
+                className: 'bg-surface border border-white/[0.08] text-zinc-200 text-[11px]',
+              }}
+            />
+          </WalkthroughProvider>
+        </SolanaWalletProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

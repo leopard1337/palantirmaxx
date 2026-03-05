@@ -12,6 +12,7 @@ import {
 import type { EventData } from '@/lib/api/types';
 import { EventCard } from '@/components/EventCard';
 import { EventDetailDrawer } from '@/components/EventDetailDrawer';
+import { GateGuard } from '@/components/GateGuard';
 import { EventListSkeleton } from '@/components/LoadingSkeleton';
 import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
@@ -47,6 +48,7 @@ function EventsContent() {
   const events = data ?? [];
 
   return (
+    <GateGuard>
     <div className="flex h-full flex-col">
       <div className="border-b border-white/[0.06] px-5 py-3.5 shrink-0">
         <h1 className="mb-2.5 text-[15px] font-semibold text-zinc-100">
@@ -109,6 +111,7 @@ function EventsContent() {
         onClose={() => setSelectedEvent(null)}
       />
     </div>
+    </GateGuard>
   );
 }
 

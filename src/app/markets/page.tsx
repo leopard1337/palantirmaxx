@@ -7,6 +7,7 @@ import { fetchEvents, CATEGORIES, type EventCategory } from '@/lib/api/events';
 import type { EventData, EventMarket } from '@/lib/api/types';
 import { formatVolume, formatProbability } from '@/lib/utils';
 import { getPreference, setPreference } from '@/lib/preferences';
+import { GateGuard } from '@/components/GateGuard';
 import { QueryErrorBanner } from '@/components/QueryErrorBanner';
 
 function MarketRow({
@@ -176,5 +177,6 @@ export default function MarketsPage() {
         )}
       </div>
     </div>
+    </GateGuard>
   );
 }

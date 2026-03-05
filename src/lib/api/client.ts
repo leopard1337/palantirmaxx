@@ -33,7 +33,7 @@ export async function apiRequest<T>(
   path: string,
   params?: Record<string, string>
 ): Promise<T> {
-  const url = getApiUrl('/api/glint' + path, params);
+  const url = getApiUrl('/api/quantis' + path, params);
 
   const cacheKey = url;
   const existing = dedupeCache.get(cacheKey);
@@ -48,7 +48,7 @@ export async function apiRequest<T>(
     });
 
     if (res.status === 401) {
-      throw new Error('Token expired or invalid. Please update GLINT_BEARER.');
+      throw new Error('Token expired or invalid. Please update QUANTIS_BEARER.');
     }
 
     if (!res.ok) {

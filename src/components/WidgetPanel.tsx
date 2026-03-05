@@ -8,6 +8,8 @@ import {
   WIDGET_CATALOG,
 } from '@/lib/dashboard-store';
 import { useMediaQueryMd } from '@/hooks/useMediaQuery';
+import { useWalletAccess, isWidgetGated } from '@/context/WalletContext';
+import { ConnectWalletButton } from '@/components/ConnectWalletButton';
 import type { FeedItem, EventData } from '@/lib/api/types';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { CryptoStablecoinWidget } from './widgets/CryptoStablecoinWidget';
@@ -33,10 +35,12 @@ function WidgetSelector({
   onSelect,
   onClose,
   hideGlobe,
+  hideGated,
 }: {
   onSelect: (type: WidgetType) => void;
   onClose: () => void;
   hideGlobe?: boolean;
+  hideGated?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -193,6 +197,7 @@ export function WidgetPanel({
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
   const isDesktop = useMediaQueryMd();
+  const { hasAccess } = useWalletAccess();
 
   const handleSelect = (type: WidgetType) => {
     onSetWidget(type);
@@ -304,6 +309,7 @@ export function WidgetPanel({
           onSelect={handleSelect}
           onClose={() => setSelectorOpen(false)}
           hideGlobe={!isDesktop}
+          hideGated={!hasAccess}
         />
       )}
     </div>

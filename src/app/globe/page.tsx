@@ -9,7 +9,7 @@ import type { CountryFeedData, FeedItem, FlightData } from '@/lib/api/types';
 import { getFeedBody } from '@/lib/utils';
 import { detectCountriesFromText } from '@/lib/detect-country';
 import { useMediaQueryMd } from '@/hooks/useMediaQuery';
-import { GlintGlobe } from '@/components/GlintGlobe';
+import { QuantisGlobe } from '@/components/QuantisGlobe';
 import { GlobeSidePanel } from '@/components/GlobeSidePanel';
 import { GlobeCountryFeedPanel } from '@/components/GlobeCountryFeedPanel';
 import { FeedDetailDrawer } from '@/components/FeedDetailDrawer';
@@ -133,7 +133,7 @@ export default function GlobePage() {
               </div>
             </div>
           )}
-          <GlintGlobe
+          <QuantisGlobe
             flights={flights}
             countryFeed={countryFeed}
             geoJson={geoJson}

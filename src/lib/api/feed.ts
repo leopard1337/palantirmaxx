@@ -12,12 +12,12 @@ export async function fetchFeed(params: {
   };
   if (params.type) search.type = params.type;
 
-  const glintData = await apiRequest<FeedResponse>('/api/feed/v2', search);
-  const glintItems = glintData?.items ?? [];
+  const data = await apiRequest<FeedResponse>('/api/feed/v2', search);
+  const items = data?.items ?? [];
 
   return {
-    items: glintItems,
-    total: glintData?.total ?? glintItems.length,
-    totalPages: glintData?.total_pages ?? 0,
+    items,
+    total: data?.total ?? items.length,
+    totalPages: data?.total_pages ?? 0,
   };
 }

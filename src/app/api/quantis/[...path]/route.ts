@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-/** Proxies Glint API - all requests appear to come from our domain */
-const GLINT_BASE = 'https://api.glint.trade';
+/** Quantis API proxy - requests appear to come from our domain */
+const API_BASE = 'https://api.glint.trade';
 
 function sanitizePath(raw: string): string {
-  let path = raw.replace(/^\/api\/glint/, '') || '/';
+  let path = raw.replace(/^\/api\/quantis/, '') || '/';
   try {
     path = decodeURIComponent(path);
   } catch {
@@ -18,13 +18,17 @@ function sanitizePath(raw: string): string {
   return path.startsWith('/') ? path : `/${path}`;
 }
 
+function getToken(): string | undefined {
+  return process.env.QUANTIS_BEARER ?? process.env.GLINT_BEARER ?? process.env.NEXT_PUBLIC_QUANTIS_BEARER ?? process.env.NEXT_PUBLIC_GLINT_BEARER;
+}
+
 export async function GET(request: NextRequest) {
-  const token = process.env.GLINT_BEARER ?? process.env.NEXT_PUBLIC_GLINT_BEARER;
+  const token = getToken();
   if (!token) {
-    return NextResponse.json({ error: 'Glint token not configured' }, { status: 503 });
+    return NextResponse.json({ error: 'API token not configured' }, { status: 503 });
   }
   const path = sanitizePath(request.nextUrl.pathname);
-  const url = new URL(path + request.nextUrl.search, GLINT_BASE);
+  const url = new URL(path + request.nextUrl.search, API_BASE);
   try {
     const res = await fetch(url.toString(), {
       headers: {
@@ -42,12 +46,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const token = process.env.GLINT_BEARER ?? process.env.NEXT_PUBLIC_GLINT_BEARER;
+  const token = getToken();
   if (!token) {
-    return NextResponse.json({ error: 'Glint token not configured' }, { status: 503 });
+    return NextResponse.json({ error: 'API token not configured' }, { status: 503 });
   }
   const path = sanitizePath(request.nextUrl.pathname);
-  const url = new URL(path + request.nextUrl.search, GLINT_BASE);
+  const url = new URL(path + request.nextUrl.search, API_BASE);
   const MAX_BODY = 100 * 1024; // 100KB
   try {
     const body = await request.text();

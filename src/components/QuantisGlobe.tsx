@@ -63,7 +63,7 @@ function TooltipRow({
   );
 }
 
-export const GlintGlobe = memo(function GlintGlobe({
+export const QuantisGlobe = memo(function QuantisGlobe({
   flights,
   countryFeed,
   geoJson,
