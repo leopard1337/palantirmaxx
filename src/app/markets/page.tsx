@@ -104,6 +104,7 @@ export default function MarketsPage() {
     : allMarkets;
 
   return (
+    <GateGuard>
     <div className="flex h-full flex-col">
       <div className="border-b border-white/[0.06] px-5 py-3.5 shrink-0">
         <div className="flex items-center justify-between mb-2.5">
