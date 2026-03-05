@@ -65,7 +65,7 @@ export function TopBar() {
 
   const feedCount = feedData?.total ?? 0;
   const flightCount = flights?.length ?? 0;
-  const navRef = useRef<HTMLNavElement>(null);
+  const navRef = useRef<HTMLElement>(null);
 
   // Scroll active nav item into view on mobile when route changes
   useEffect(() => {
