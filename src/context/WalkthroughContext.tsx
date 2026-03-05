@@ -51,11 +51,33 @@ export function WalkthroughProvider({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    if (isFirstVisit()) {
+    if (!mounted || !isFirstVisit()) return;
+    const splashKey = 'raven-splash-shown';
+    const splashDoneEvent = 'raven-splash-complete';
+
+    if (sessionStorage.getItem(splashKey)) {
       setActive(true);
       setStep(0);
+      return;
     }
+
+    const onSplashComplete = () => {
+      window.removeEventListener(splashDoneEvent, onSplashComplete);
+      setActive(true);
+      setStep(0);
+    };
+    window.addEventListener(splashDoneEvent, onSplashComplete);
+
+    const fallback = setTimeout(() => {
+      window.removeEventListener(splashDoneEvent, onSplashComplete);
+      setActive(true);
+      setStep(0);
+    }, 4000);
+
+    return () => {
+      window.removeEventListener(splashDoneEvent, onSplashComplete);
+      clearTimeout(fallback);
+    };
   }, [mounted]);
 
   const finish = useCallback(() => {

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 const SPLASH_STORAGE_KEY = 'raven-splash-shown';
+const SPLASH_COMPLETE_EVENT = 'raven-splash-complete';
 const MATRIX_GREEN = '#00ff41';
 
 function useSplashEligible(): boolean {
@@ -110,6 +111,7 @@ function SplashScreenInner() {
       try {
         sessionStorage.setItem(SPLASH_STORAGE_KEY, '1');
       } catch {}
+      window.dispatchEvent(new CustomEvent(SPLASH_COMPLETE_EVENT));
     }, 700);
     return () => clearTimeout(t);
   }, [phase]);
