@@ -88,3 +88,34 @@ All new UI matches existing theme:
 - Accent: `#00ffa3` (mint)
 - Borders: `rgba(255,255,255,0.06)` / `0.08`
 - Typography: JetBrains Mono, 10–12px for content
+
+---
+
+## Potential APIs to Integrate
+
+APIs that are free, have free tiers, or offer API keys on signup:
+
+### Free / No API Key
+
+| API | URL | Data | Notes |
+|-----|-----|------|------|
+| **Open Notify** | `http://api.open-notify.org/` | ISS position, astros, pass predictions | No key. No CORS/HTTPS – use Next.js API route as proxy. Great for Globe layer. |
+| **Frankfurter** | `https://api.frankfurter.dev/latest` | FX rates (ECB), historical, time series | No key, no rate limit. EUR/USD, 30+ currencies. |
+| **Binance Public** | `https://api.binance.com/api/v3/ticker/price` | Crypto prices, 24h stats, klines, depth | Public endpoints, no key. Fallback/alternative to CoinGecko. |
+| **ExchangeRate-API (Open)** | `https://open.er-api.com/v6/latest/USD` | Daily FX rates, 165+ currencies | No key, attribution required, ~1 req/day recommended. |
+
+### Free Tier (API Key on Signup)
+
+| API | URL | Data | Free Tier |
+|-----|-----|------|-----------|
+| **Manifold Markets** | `https://api.manifold.markets` | Prediction markets, trades | 500 req/min, key via account. Complements Glint/Polymarket. |
+| **Marketaux** | `marketaux.com` | Financial news, sentiment | ~100 req/day free. |
+| **The News API** | `newsapi.org` | News 40K+ sources | Free dev tier. |
+| **Oil Price API** | `oilpriceapi.com` | Oil, gas, commodities | 7-day trial 10K req; demo 20 req/hr. |
+| **AISStream** | `aisstream.io` | Maritime vessel positions | WebSocket, key via GitHub login. Globe ships layer. |
+
+### Other Ideas
+
+- **SpaceX API** (unofficial): Launches, rockets, starlink – no official key.
+- **COVID API** (disease.sh): Global COVID stats – free.
+- **REST Countries**: Country metadata, flags – no key.

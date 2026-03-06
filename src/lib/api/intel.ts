@@ -432,6 +432,26 @@ export async function fetchGDACSEvents(): Promise<GDACSFeature[]> {
   }
 }
 
+export interface ISSData {
+  lat: number;
+  lng: number;
+  timestamp: number;
+  people?: number;
+  astros?: Array<{ name: string; craft: string }>;
+}
+
+export async function fetchISS(includeAstros = true): Promise<ISSData | null> {
+  try {
+    const params = includeAstros ? { include: 'astros' } : undefined;
+    const url = getApiUrl('/api/intel/iss', params);
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`ISS ${res.status}`);
+    return (await res.json()) as ISSData;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchTrends(geo = 'US'): Promise<TrendItem[]> {
   try {
     const res = await fetch(getApiUrl('/api/intel/trends', { geo }), { cache: 'no-store' });

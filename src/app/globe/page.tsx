@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchFlights, fetchCountryFeed } from '@/lib/api/flights';
+import { fetchISS } from '@/lib/api/intel';
 import { fetchFeed } from '@/lib/api/feed';
 import type { CountryFeedData, FeedItem, FlightData } from '@/lib/api/types';
 import { getFeedBody } from '@/lib/utils';
@@ -72,6 +73,13 @@ export default function GlobePage() {
     staleTime: 60_000,
   });
 
+  const { data: iss } = useQuery({
+    queryKey: ['iss'],
+    queryFn: () => fetchISS(true),
+    refetchInterval: 10_000,
+    staleTime: 5_000,
+  });
+
   const { data: feedData } = useQuery({
     queryKey: ['feed', 'globe'],
     queryFn: () => fetchFeed({ page: 1, count: 100 }),
@@ -135,6 +143,7 @@ export default function GlobePage() {
           )}
           <QuantisGlobe
             flights={flights}
+            iss={iss ?? null}
             countryFeed={countryFeed}
             geoJson={geoJson}
             selectedFlight={selectedFlight}

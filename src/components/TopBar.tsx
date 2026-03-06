@@ -12,7 +12,7 @@ import { fetchFeed } from '@/lib/api/feed';
 import { fetchFlights } from '@/lib/api/flights';
 import { fetchEvents } from '@/lib/api/events';
 import { fetchMovers } from '@/lib/api/movers';
-import { fetchCryptoQuotes, fetchStablecoinMarkets, fetchTrends } from '@/lib/api/intel';
+import { fetchCryptoQuotes, fetchStablecoinMarkets, fetchTrends, fetchISS } from '@/lib/api/intel';
 
 const nav: { href: string; label: string; exact?: boolean }[] = [
   { href: '/', label: 'Dashboard', exact: true },
@@ -43,7 +43,10 @@ export function TopBar() {
         initialPageParam: 1,
       });
     }
-    if (href === '/globe') queryClient.prefetchQuery({ queryKey: ['flights'], queryFn: () => fetchFlights(50) });
+    if (href === '/globe') {
+      queryClient.prefetchQuery({ queryKey: ['flights'], queryFn: () => fetchFlights(50) });
+      queryClient.prefetchQuery({ queryKey: ['iss'], queryFn: () => fetchISS(true) });
+    }
     if (href === '/events') queryClient.prefetchQuery({ queryKey: ['events', 'all'], queryFn: () => fetchEvents('all') });
     if (href === '/movers') queryClient.prefetchQuery({ queryKey: ['movers'], queryFn: fetchMovers });
     if (href === '/markets') queryClient.prefetchQuery({ queryKey: ['events', 'all'], queryFn: () => fetchEvents('all') });

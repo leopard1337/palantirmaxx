@@ -4,36 +4,176 @@ import dynamic from 'next/dynamic';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { FlightData, CountryFeedData, FeedItem } from '@/lib/api/types';
+import type { ISSData } from '@/lib/api/intel';
 import { CAT_COLORS } from '@/lib/constants';
 import { formatTimeAgo, getFeedBody, getFeedTimestamp } from '@/lib/utils';
 import { getCountryCentroid, buildCentroidMap } from '@/lib/country-centroids';
 
-const PLANE_EMOJI = '✈️';
-const PLANE_SPRITE_SIZE = 8;
+const PLANE_SIZE = 8;
+const PLANE_GLOW_SIZE = 12;
 
+/* Soft glow texture for plane halo */
 let sharedPlaneTexture: THREE.CanvasTexture | null = null;
+let sharedGlowTexture: THREE.CanvasTexture | null = null;
 
 function getPlaneTexture(): THREE.CanvasTexture {
   if (sharedPlaneTexture) return sharedPlaneTexture;
   const canvas = document.createElement('canvas');
-  const size = 64;
+  const size = 128;
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `${size * 0.7}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
-  ctx.fillText(PLANE_EMOJI, size / 2, size / 2);
+  const s = size / 36;
+  const cx = 18 * s;
+  const cy = 18 * s;
+  ctx.clearRect(0, 0, size, size);
+  /* Top-down plane: fuselage (arrow) + wings */
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath();
+  /* Nose */
+  ctx.moveTo(cx + 14 * s, cy);
+  /* Right wing */
+  ctx.lineTo(cx + 6 * s, cy - 10 * s);
+  ctx.lineTo(cx + 2 * s, cy - 6 * s);
+  /* Tail */
+  ctx.lineTo(cx - 12 * s, cy);
+  /* Left side */
+  ctx.lineTo(cx + 2 * s, cy + 6 * s);
+  ctx.lineTo(cx + 6 * s, cy + 10 * s);
+  ctx.closePath();
+  ctx.shadowColor = 'rgba(0,0,0,0.35)';
+  ctx.shadowBlur = 3;
+  ctx.fill();
+  ctx.shadowBlur = 0;
   sharedPlaneTexture = new THREE.CanvasTexture(canvas);
   sharedPlaneTexture.needsUpdate = true;
   return sharedPlaneTexture;
 }
 
-function createPlaneSprite(): THREE.Sprite {
-  const material = new THREE.SpriteMaterial({ map: getPlaneTexture() });
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(PLANE_SPRITE_SIZE, PLANE_SPRITE_SIZE, 1);
-  return sprite;
+function getGlowTexture(): THREE.CanvasTexture {
+  if (sharedGlowTexture) return sharedGlowTexture;
+  const canvas = document.createElement('canvas');
+  const size = 64;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gradient.addColorStop(0, 'rgba(255,255,255,0.25)');
+  gradient.addColorStop(0.4, 'rgba(255,255,255,0.08)');
+  gradient.addColorStop(0.7, 'rgba(255,255,255,0.02)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  sharedGlowTexture = new THREE.CanvasTexture(canvas);
+  sharedGlowTexture.needsUpdate = true;
+  return sharedGlowTexture;
+}
+
+const ISS_SIZE = 36;
+const ISS_GLOW_SIZE = 52;
+const ISS_COLOR = '#00f0ff';
+
+let sharedISSTexture: THREE.CanvasTexture | null = null;
+let sharedISSGlowTexture: THREE.CanvasTexture | null = null;
+
+function getISSTexture(): THREE.CanvasTexture {
+  if (sharedISSTexture) return sharedISSTexture;
+  const canvas = document.createElement('canvas');
+  const size = 96;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const cx = size / 2;
+  const cy = size / 2;
+  ctx.clearRect(0, 0, size, size);
+  /* Space station: central module + solar wings - crisp, high contrast */
+  ctx.fillStyle = 'rgba(255,255,255,1)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 14, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(cx - 3, cy - 22, 6, 44);
+  ctx.fillRect(cx - 26, cy - 5, 52, 10);
+  sharedISSTexture = new THREE.CanvasTexture(canvas);
+  sharedISSTexture.needsUpdate = true;
+  return sharedISSTexture;
+}
+
+function getISSGlowTexture(): THREE.CanvasTexture {
+  if (sharedISSGlowTexture) return sharedISSGlowTexture;
+  const canvas = document.createElement('canvas');
+  const size = 128;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const cx = size / 2;
+  const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, size / 2);
+  g.addColorStop(0, 'rgba(0,240,255,0.5)');
+  g.addColorStop(0.3, 'rgba(0,240,255,0.2)');
+  g.addColorStop(0.6, 'rgba(0,200,255,0.06)');
+  g.addColorStop(1, 'rgba(0,240,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  sharedISSGlowTexture = new THREE.CanvasTexture(canvas);
+  sharedISSGlowTexture.needsUpdate = true;
+  return sharedISSGlowTexture;
+}
+
+function createPlaneSprite(d: FlightPoint): THREE.Object3D {
+  const group = new THREE.Group();
+  const color = d.color;
+
+  /* Subtle glow */
+  const glowMat = new THREE.SpriteMaterial({
+    map: getGlowTexture(),
+    color: color,
+    transparent: true,
+    opacity: 0.5,
+  });
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.set(PLANE_GLOW_SIZE, PLANE_GLOW_SIZE, 1);
+  group.add(glow);
+
+  /* Plane icon - uniform size, category color */
+  const planeMat = new THREE.SpriteMaterial({
+    map: getPlaneTexture(),
+    color: color,
+    transparent: true,
+    depthTest: true,
+  });
+  const plane = new THREE.Sprite(planeMat);
+  plane.scale.set(PLANE_SIZE, PLANE_SIZE, 1);
+  group.add(plane);
+
+  return group;
+}
+
+function createISSSprite(_d: ISSPoint): THREE.Object3D {
+  const group = new THREE.Group();
+  const color = ISS_COLOR;
+
+  /* Strong cyan glow - highly visible */
+  const glowMat = new THREE.SpriteMaterial({
+    map: getISSGlowTexture(),
+    color: color,
+    transparent: true,
+    opacity: 0.9,
+    depthTest: false,
+  });
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.set(ISS_GLOW_SIZE, ISS_GLOW_SIZE, 1);
+  group.add(glow);
+
+  const issMat = new THREE.SpriteMaterial({
+    map: getISSTexture(),
+    color: color,
+    transparent: true,
+    depthTest: true,
+  });
+  const iss = new THREE.Sprite(issMat);
+  iss.scale.set(ISS_SIZE, ISS_SIZE, 1);
+  group.add(iss);
+
+  return group;
 }
 
 const Globe = dynamic(() => import('react-globe.gl'), {
@@ -67,6 +207,17 @@ interface MentionPoint {
   _src: { country: string; count: number; tweet: string; ts: string; recent: FeedItem[] };
 }
 
+interface ISSPoint {
+  id: string;
+  lat: number;
+  lng: number;
+  alt: number;
+  radius: number;
+  color: string;
+  _type: 'iss';
+  _src: ISSData;
+}
+
 const INIT_POV = { lat: 30, lng: 45, altitude: 2.2 };
 
 function TooltipRow({
@@ -94,6 +245,7 @@ function TooltipRow({
 
 export const QuantisGlobe = memo(function QuantisGlobe({
   flights,
+  iss,
   countryFeed,
   geoJson,
   selectedFlight,
@@ -101,6 +253,7 @@ export const QuantisGlobe = memo(function QuantisGlobe({
   onMentionClick,
 }: {
   flights: FlightData[];
+  iss: ISSData | null;
   countryFeed: CountryFeedData[];
   geoJson: Record<string, unknown> | null;
   selectedFlight: FlightData | null;
@@ -109,6 +262,7 @@ export const QuantisGlobe = memo(function QuantisGlobe({
 }) {
   const globeRef = useRef<any>(null);
   const [hovered, setHovered] = useState<FlightData | null>(null);
+  const [hoveredISS, setHoveredISS] = useState<ISSData | null>(null);
   const [hoveredMention, setHoveredMention] = useState<MentionPoint['_src'] | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [dims, setDims] = useState({ w: 800, h: 600 });
@@ -164,6 +318,20 @@ export const QuantisGlobe = memo(function QuantisGlobe({
     );
   }, [selectedFlight]);
 
+  const issPoint: ISSPoint | null = useMemo(() => {
+    if (!iss || !Number.isFinite(iss.lat) || !Number.isFinite(iss.lng)) return null;
+    return {
+      id: 'iss',
+      lat: iss.lat,
+      lng: iss.lng,
+      alt: 0.1, // ~400km orbit in radius units, above planes
+      radius: 0.3,
+      color: ISS_COLOR,
+      _type: 'iss',
+      _src: iss,
+    };
+  }, [iss]);
+
   const flightPoints: FlightPoint[] = useMemo(
     () =>
       flights
@@ -175,8 +343,8 @@ export const QuantisGlobe = memo(function QuantisGlobe({
             id: `flight-${f.id}`,
             lat: f.position.lat,
             lng: f.position.lon,
-          alt: norm * 0.018,
-          radius: norm * 0.3 + 0.15,
+            alt: norm * 0.02 + 0.07, // 0.07–0.09 above surface, no clip
+            radius: 0.15,
           color: CAT_COLORS[f.category] ?? CAT_COLORS.Other,
           _type: 'flight' as const,
           _src: f,
@@ -215,7 +383,15 @@ export const QuantisGlobe = memo(function QuantisGlobe({
 
   const points = mentionPoints;
 
-  const objectThreeObject = useCallback(() => createPlaneSprite(), []);
+  const objectsData = useMemo(
+    () => [...flightPoints, ...(issPoint ? [issPoint] : [])],
+    [flightPoints, issPoint],
+  );
+
+  const objectThreeObject = useCallback((d: FlightPoint | ISSPoint) => {
+    if (d._type === 'iss') return createISSSprite(d);
+    return createPlaneSprite(d);
+  }, []);
 
   const capColor = useCallback(
     (feat: any) => {
@@ -262,7 +438,14 @@ export const QuantisGlobe = memo(function QuantisGlobe({
 
   const onObjectClick = useCallback(
     (obj: any, _ev: MouseEvent) => {
-      if (obj?._src) onFlightClick(obj._src);
+      if (!obj) return;
+      if (obj._type === 'iss') {
+        if (globeRef.current && obj.lat != null && obj.lng != null) {
+          globeRef.current.pointOfView({ lat: obj.lat, lng: obj.lng, altitude: 1.5 }, 600);
+        }
+      } else if (obj._src) {
+        onFlightClick(obj._src);
+      }
     },
     [onFlightClick],
   );
@@ -296,7 +479,7 @@ export const QuantisGlobe = memo(function QuantisGlobe({
         pointsMerge={false}
         onPointHover={onPointHover}
         onPointClick={onPointClick}
-        objectsData={flightPoints}
+        objectsData={objectsData}
         objectLat="lat"
         objectLng="lng"
         objectAltitude="alt"
@@ -317,6 +500,31 @@ export const QuantisGlobe = memo(function QuantisGlobe({
             <div className="mt-1.5 text-[12px] text-zinc-500 opacity-75">
               {hoveredMention.count} mentions · {hoveredMention.ts}
             </div>
+          </div>
+        </div>
+      )}
+
+      {hoveredISS && (
+        <div className="absolute bottom-4 left-4 z-30 w-72 rounded-xl border border-zinc-700/40 bg-zinc-900/95 backdrop-blur-md p-3.5 shadow-2xl animate-fade-in pointer-events-none">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[13px] font-bold text-zinc-100 tracking-tight">ISS</span>
+            <span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#00f0ff] bg-[#00f0ff]/15">
+              Live
+            </span>
+          </div>
+          <div className="text-[10px] space-y-1">
+            <TooltipRow label="Position" value={`${hoveredISS.lat.toFixed(2)}°, ${hoveredISS.lng.toFixed(2)}°`} mono />
+            {hoveredISS.people != null && hoveredISS.people > 0 && (
+              <TooltipRow label="People in space" value={String(hoveredISS.people)} />
+            )}
+            {hoveredISS.astros && hoveredISS.astros.length > 0 && (
+              <div className="mt-1.5 pt-1.5 border-t border-white/[0.06]">
+                <span className="text-zinc-500 text-[9px]">Crew: </span>
+                <span className="text-zinc-300 text-[9px]">
+                  {hoveredISS.astros.map((a) => `${a.name} (${a.craft})`).join(', ')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
