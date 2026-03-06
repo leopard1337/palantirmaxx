@@ -16,6 +16,10 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Quantis - Intelligence Terminal',
   description: 'Real-time prediction market intelligence',
+  icons: {
+    icon: '/quantis-logo.png',
+    apple: '/quantis-logo.png',
+  },
 };
 
 export const viewport: Viewport = {
