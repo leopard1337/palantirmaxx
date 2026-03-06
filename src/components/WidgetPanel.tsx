@@ -52,7 +52,8 @@ function WidgetSelector({
     return () => document.removeEventListener('mousedown', handle);
   }, [onClose]);
 
-  const catalog = hideGlobe ? WIDGET_CATALOG.filter((w) => w.type !== 'globe') : WIDGET_CATALOG;
+  let catalog = hideGlobe ? WIDGET_CATALOG.filter((w) => w.type !== 'globe') : WIDGET_CATALOG;
+  if (hideGated) catalog = catalog.filter((w) => !isWidgetGated(w.type));
   const groups = catalog.reduce<Record<string, typeof WIDGET_CATALOG>>(
     (acc, item) => {
       (acc[item.group] ??= []).push(item);
@@ -235,8 +236,28 @@ export function WidgetPanel({
             onSelect={handleSelect}
             onClose={() => setSelectorOpen(false)}
             hideGlobe={!isDesktop}
+            hideGated={!hasAccess}
           />
         )}
+      </div>
+    );
+  }
+
+  const panelIsGated = panel.widget && isWidgetGated(panel.widget) && !hasAccess;
+  if (panelIsGated) {
+    return (
+      <div className="relative flex h-full min-h-0 flex-col rounded-lg border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-3.5 py-2 bg-white/[0.03] shrink-0">
+          <span className="text-[10px] font-semibold text-zinc-500">
+            {getWidgetLabel(panel.widget)} — Token-gated
+          </span>
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4">
+          <p className="text-center text-[11px] text-zinc-500">
+            Connect wallet and hold ≥10,000 tokens to unlock.
+          </p>
+          <ConnectWalletButton />
+        </div>
       </div>
     );
   }

@@ -94,6 +94,17 @@ export function TopBar() {
           </span>
         </Link>
         <div className="flex items-center gap-2 md:hidden">
+          <a
+            href="https://x.com/quantisgg"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Quantis on X"
+            className="rounded p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
           <ConnectWalletButton />
           {feedCount > 0 && (
             <span className="text-[10px] font-medium text-zinc-400">
@@ -136,8 +147,19 @@ export function TopBar() {
         })}
       </nav>
 
-      {/* Right: counters + replay - hidden on mobile (nav gets full width) */}
+      {/* Right: X link, wallet, counters - hidden on mobile (nav gets full width) */}
       <div className="hidden md:flex items-center gap-3 shrink-0 md:pr-5">
+        <a
+          href="https://x.com/quantisgg"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Quantis on X"
+          className="rounded p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+        </a>
         <ConnectWalletButton />
         {walkthrough && (
           <button
