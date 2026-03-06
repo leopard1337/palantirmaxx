@@ -1,0 +1,27 @@
+{
+  "name": "quantis-cli",
+  "version": "0.1.0",
+  "description": "Quantis data layer for agents – fetch intel, markets, feed as JSON",
+  "type": "module",
+  "bin": {
+    "quantis": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "data": "tsc && node dist/index.js data"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

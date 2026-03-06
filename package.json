@@ -10,7 +10,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cli": "cd cli && npm run build && node dist/index.js",
+    "cli:data": "cd cli && npm run build && node dist/index.js data"
   },
   "dependencies": {
     "@solana/wallet-adapter-base": "^0.9.23",

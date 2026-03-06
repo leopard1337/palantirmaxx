@@ -2,6 +2,11 @@
 
 # dependencies
 /node_modules
+node_modules/
+
+# cli build output
+cli/dist/
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
