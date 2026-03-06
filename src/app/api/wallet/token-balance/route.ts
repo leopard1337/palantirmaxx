@@ -4,11 +4,21 @@ const HELIUS_RPC = 'https://mainnet.helius-rpc.com/?api-key=3d53f1e2-28b8-4261-8
 
 /** Token mint address - update when provided */
 const QUANTIS_TOKEN_MINT = process.env.QUANTIS_TOKEN_MINT || 'PLACEHOLDER_MINT_ADDRESS';
+const REQUIRED_BALANCE = 100_000;
+
+/** Whitelisted addresses that bypass token gate */
+const WHITELIST = new Set([
+  'EWX8BgVxzwg3SCXpXsKfATK8SnFAxHqgdZWFGUXfnonB',
+]);
 
 export async function GET(request: NextRequest) {
   const wallet = request.nextUrl.searchParams.get('wallet');
   if (!wallet || typeof wallet !== 'string') {
     return NextResponse.json({ error: 'Wallet address required' }, { status: 400 });
+  }
+
+  if (WHITELIST.has(wallet)) {
+    return NextResponse.json({ balance: 0, hasAccess: true });
   }
 
   if (QUANTIS_TOKEN_MINT === 'PLACEHOLDER_MINT_ADDRESS') {
@@ -46,7 +56,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const hasAccess = total >= 10_000;
+    const hasAccess = total >= REQUIRED_BALANCE;
     return NextResponse.json({ balance: total, hasAccess });
   } catch (err) {
     return NextResponse.json({ balance: 0, hasAccess: false });

@@ -254,7 +254,7 @@ export function WidgetPanel({
         </div>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4">
           <p className="text-center text-[11px] text-zinc-500">
-            Connect wallet and hold ≥10,000 tokens to unlock.
+            Connect wallet and hold ≥100,000 $QUANT tokens to unlock.
           </p>
           <ConnectWalletButton />
         </div>

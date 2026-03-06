@@ -12,7 +12,6 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 
 const GATED_ROUTES = ['/markets', '/movers', '/events'];
 const GATED_WIDGETS = ['markets', 'movers', 'events'] as const;
-const REQUIRED_BALANCE = 10_000;
 
 export type WalletContextValue = {
   connected: boolean;
@@ -49,11 +48,13 @@ export function WalletProviderInner({ children }: { children: ReactNode }) {
   const { connection } = useConnection();
   const { publicKey, connected } = useWallet();
   const [balance, setBalance] = useState<number | null>(null);
+  const [apiHasAccess, setApiHasAccess] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchBalance = useCallback(async () => {
     if (!publicKey?.toBase58()) {
       setBalance(null);
+      setApiHasAccess(null);
       return;
     }
     setIsLoading(true);
@@ -62,8 +63,10 @@ export function WalletProviderInner({ children }: { children: ReactNode }) {
       const res = await fetch(url);
       const data = await res.json();
       setBalance(data?.balance ?? 0);
+      setApiHasAccess(data?.hasAccess ?? false);
     } catch {
       setBalance(0);
+      setApiHasAccess(false);
     } finally {
       setIsLoading(false);
     }
@@ -72,12 +75,13 @@ export function WalletProviderInner({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!connected || !publicKey) {
       setBalance(null);
+      setApiHasAccess(null);
       return;
     }
     fetchBalance();
   }, [connected, publicKey, fetchBalance]);
 
-  const hasAccess = connected && balance !== null && balance >= REQUIRED_BALANCE;
+  const hasAccess = connected && apiHasAccess === true;
 
   const value: WalletContextValue = {
     connected: !!connected,

@@ -39,8 +39,8 @@ export function GateGuard({ children }: { children: React.ReactNode }) {
         </h2>
         <p className="text-[13px] text-zinc-400 leading-relaxed">
           {!connected
-            ? 'Connect your wallet and hold ≥10,000 Quantis tokens to access this section.'
-            : `You need at least 10,000 tokens. Your balance: ${(balance ?? 0).toLocaleString()}`}
+            ? 'Connect your wallet and hold ≥100,000 $QUANT tokens to access this section.'
+            : `You need at least 100,000 $QUANT tokens. Your balance: ${(balance ?? 0).toLocaleString()}`}
         </p>
       </div>
       <ConnectWalletButton />
