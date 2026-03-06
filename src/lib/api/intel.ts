@@ -12,6 +12,7 @@ import type {
   Earthquake,
   GDACSFeature,
   WeatherAlert,
+  TrendItem,
 } from './intel-types';
 import { getApiUrl } from './base-url';
 
@@ -426,6 +427,17 @@ export async function fetchGDACSEvents(): Promise<GDACSFeature[]> {
       }
     }
     return Array.from(byEvent.values());
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchTrends(geo = 'US'): Promise<TrendItem[]> {
+  try {
+    const res = await fetch(getApiUrl('/api/intel/trends', { geo }), { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Trends ${res.status}`);
+    const data = (await res.json()) as TrendItem[];
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }

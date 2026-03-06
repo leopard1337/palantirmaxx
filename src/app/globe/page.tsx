@@ -61,8 +61,8 @@ export default function GlobePage() {
   const { data: flights = [] } = useQuery({
     queryKey: ['flights'],
     queryFn: () => fetchFlights(50),
-    refetchInterval: 8_000,
-    staleTime: 8_000,
+    refetchInterval: 15_000,
+    staleTime: 10_000,
   });
 
   const { data: countryFeedRaw = [] } = useQuery({

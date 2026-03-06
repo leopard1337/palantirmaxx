@@ -11,11 +11,12 @@ import {
   fetchBootstrapEarthquakes,
   fetchWeatherAlerts,
   fetchGDACSEvents,
+  fetchTrends,
   getFredSeriesUnit,
 } from '@/lib/api/intel';
 import { MiniSparkline } from '@/components/MiniSparkline';
 
-const TABS = ['Markets', 'Economy', 'Disasters'] as const;
+const TABS = ['Markets', 'Economy', 'Disasters', 'Trends'] as const;
 type TabId = (typeof TABS)[number];
 
 export default function IntelPage() {
@@ -74,6 +75,13 @@ export default function IntelPage() {
     enabled: tab === 'Disasters',
     placeholderData: keepPreviousData,
   });
+  const trendsQuery = useQuery({
+    queryKey: ['intel', 'trends'],
+    queryFn: () => fetchTrends('US'),
+    staleTime: 60_000,
+    enabled: tab === 'Trends',
+    placeholderData: keepPreviousData,
+  });
 
   const cryptoList = crypto ?? [];
   const stableList = stable?.stablecoins ?? [];
@@ -82,6 +90,7 @@ export default function IntelPage() {
   const eqList = earthquakes ?? [];
   const weatherList = weather ?? [];
   const gdacsList = gdacs ?? [];
+  const trendsList = trendsQuery.data ?? [];
 
   return (
     <div className="flex h-full flex-col">
@@ -390,6 +399,59 @@ export default function IntelPage() {
                 </div>
               ) : (
                 <p className="text-[11px] text-zinc-500">No GDACS events</p>
+              )}
+            </section>
+          </div>
+        )}
+
+        {tab === 'Trends' && (
+          <div className="grid gap-4 md:grid-cols-2 animate-tab-fade">
+            <section className="md:col-span-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+              <h2 className="mb-3 text-[12px] font-bold text-zinc-300 uppercase tracking-wider">
+                Google Trends — US Daily
+              </h2>
+              {trendsQuery.isLoading && trendsList.length === 0 ? (
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="h-16 animate-pulse rounded-lg bg-white/[0.04]" />
+                  ))}
+                </div>
+              ) : trendsList.length > 0 ? (
+                <div className="space-y-3">
+                  {trendsList.map((t, i) => (
+                    <div
+                      key={`${t.title}-${i}`}
+                      className="rounded-lg border border-white/[0.06] bg-white/[0.02] overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3 px-3 py-2.5">
+                        <span className="text-[12px] font-bold text-zinc-100">{t.title}</span>
+                        {t.traffic && (
+                          <span className="text-[10px] font-mono text-zinc-500 bg-white/[0.04] px-1.5 py-0.5 rounded">
+                            {t.traffic}
+                          </span>
+                        )}
+                      </div>
+                      {t.articles.length > 0 && (
+                        <div className="border-t border-white/[0.04] px-3 py-2 space-y-1.5">
+                          {t.articles.slice(0, 3).map((a, j) => (
+                            <a
+                              key={j}
+                              href={a.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-col gap-0.5 rounded px-2 py-1.5 hover:bg-white/[0.04] transition-colors"
+                            >
+                              <span className="text-[11px] text-zinc-200 line-clamp-2">{a.title}</span>
+                              <span className="text-[9px] text-zinc-500">{a.source}</span>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-zinc-500">No trends data</p>
               )}
             </section>
           </div>

@@ -37,8 +37,8 @@ export function FlightGlobeWidget() {
   const { data, isLoading } = useQuery({
     queryKey: ['flights', 'widget'],
     queryFn: () => fetchFlights(30),
-    refetchInterval: 8_000,
-    staleTime: 8_000,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
   });
 
   const flights = useMemo(

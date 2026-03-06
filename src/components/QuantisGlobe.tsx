@@ -2,10 +2,39 @@
 
 import dynamic from 'next/dynamic';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as THREE from 'three';
 import type { FlightData, CountryFeedData, FeedItem } from '@/lib/api/types';
 import { CAT_COLORS } from '@/lib/constants';
 import { formatTimeAgo, getFeedBody, getFeedTimestamp } from '@/lib/utils';
 import { getCountryCentroid, buildCentroidMap } from '@/lib/country-centroids';
+
+const PLANE_EMOJI = '✈️';
+const PLANE_SPRITE_SIZE = 8;
+
+let sharedPlaneTexture: THREE.CanvasTexture | null = null;
+
+function getPlaneTexture(): THREE.CanvasTexture {
+  if (sharedPlaneTexture) return sharedPlaneTexture;
+  const canvas = document.createElement('canvas');
+  const size = 64;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${size * 0.7}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+  ctx.fillText(PLANE_EMOJI, size / 2, size / 2);
+  sharedPlaneTexture = new THREE.CanvasTexture(canvas);
+  sharedPlaneTexture.needsUpdate = true;
+  return sharedPlaneTexture;
+}
+
+function createPlaneSprite(): THREE.Sprite {
+  const material = new THREE.SpriteMaterial({ map: getPlaneTexture() });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(PLANE_SPRITE_SIZE, PLANE_SPRITE_SIZE, 1);
+  return sprite;
+}
 
 const Globe = dynamic(() => import('react-globe.gl'), {
   ssr: false,
@@ -184,10 +213,9 @@ export const QuantisGlobe = memo(function QuantisGlobe({
     return out;
   }, [countryFeed, centroidMap]);
 
-  const points: (FlightPoint | MentionPoint)[] = useMemo(
-    () => [...flightPoints, ...mentionPoints],
-    [flightPoints, mentionPoints],
-  );
+  const points = mentionPoints;
+
+  const objectThreeObject = useCallback(() => createPlaneSprite(), []);
 
   const capColor = useCallback(
     (feat: any) => {
@@ -206,19 +234,16 @@ export const QuantisGlobe = memo(function QuantisGlobe({
   const polyGeo = useCallback((d: any) => d.geometry, []);
   const noop = useCallback(() => {}, []);
 
-  const onHover = useCallback((pt: any) => {
+  const onPointHover = useCallback((pt: any) => {
     if (!pt) {
-      setHovered(null);
       setHoveredMention(null);
       return;
     }
-    if (pt._type === 'mention') {
-      setHovered(null);
-      setHoveredMention(pt._src);
-      return;
-    }
-    setHoveredMention(null);
-    setHovered(pt._type === 'flight' ? pt._src : null);
+    setHoveredMention(pt._src);
+  }, []);
+
+  const onObjectHover = useCallback((obj: any) => {
+    setHovered(obj?._src ?? null);
   }, []);
 
   useEffect(() => {
@@ -227,22 +252,19 @@ export const QuantisGlobe = memo(function QuantisGlobe({
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
-  const onClick = useCallback(
+  const onPointClick = useCallback(
     (pt: any) => {
-      if (!pt) return;
-      if (pt._type === 'flight') {
-        onFlightClick(pt._src);
-        return;
-      }
-      if (pt._type === 'mention' && onMentionClick && pt._src?.recent?.length) {
-        onMentionClick({
-          country: pt._src.country,
-          count: pt._src.count,
-          recent: pt._src.recent,
-        });
-      }
+      if (!pt || !onMentionClick || !pt._src?.recent?.length) return;
+      onMentionClick({ country: pt._src.country, count: pt._src.count, recent: pt._src.recent });
     },
-    [onFlightClick, onMentionClick],
+    [onMentionClick],
+  );
+
+  const onObjectClick = useCallback(
+    (obj: any, _ev: MouseEvent) => {
+      if (obj?._src) onFlightClick(obj._src);
+    },
+    [onFlightClick],
   );
 
   return (
@@ -272,8 +294,16 @@ export const QuantisGlobe = memo(function QuantisGlobe({
         pointRadius="radius"
         pointColor="color"
         pointsMerge={false}
-        onPointHover={onHover}
-        onPointClick={onClick}
+        onPointHover={onPointHover}
+        onPointClick={onPointClick}
+        objectsData={flightPoints}
+        objectLat="lat"
+        objectLng="lng"
+        objectAltitude="alt"
+        objectThreeObject={objectThreeObject}
+        objectFacesSurface={false}
+        onObjectHover={onObjectHover}
+        onObjectClick={onObjectClick}
       />
 
       {hoveredMention && (

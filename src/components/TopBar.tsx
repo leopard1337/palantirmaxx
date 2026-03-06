@@ -12,7 +12,7 @@ import { fetchFeed } from '@/lib/api/feed';
 import { fetchFlights } from '@/lib/api/flights';
 import { fetchEvents } from '@/lib/api/events';
 import { fetchMovers } from '@/lib/api/movers';
-import { fetchCryptoQuotes, fetchStablecoinMarkets } from '@/lib/api/intel';
+import { fetchCryptoQuotes, fetchStablecoinMarkets, fetchTrends } from '@/lib/api/intel';
 
 const nav: { href: string; label: string; exact?: boolean }[] = [
   { href: '/', label: 'Dashboard', exact: true },
@@ -50,6 +50,7 @@ export function TopBar() {
     if (href === '/intel') {
       queryClient.prefetchQuery({ queryKey: ['intel', 'crypto'], queryFn: () => fetchCryptoQuotes(['bitcoin', 'ethereum', 'solana']) });
       queryClient.prefetchQuery({ queryKey: ['intel', 'stablecoins'], queryFn: () => fetchStablecoinMarkets() });
+      queryClient.prefetchQuery({ queryKey: ['intel', 'trends'], queryFn: () => fetchTrends('US') });
     }
   };
 

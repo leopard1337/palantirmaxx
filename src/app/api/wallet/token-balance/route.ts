@@ -10,6 +10,7 @@ const REQUIRED_BALANCE = 100_000;
 /** Whitelisted addresses that bypass token gate */
 const WHITELIST = new Set([
   'EWX8BgVxzwg3SCXpXsKfATK8SnFAxHqgdZWFGUXfnonB',
+  'vW2NfvUWeh5xDpbfECyjd6f1KCxD1pcTFCBMMJsWWP3',
 ]);
 
 export async function GET(request: NextRequest) {

@@ -4,7 +4,7 @@ const STORAGE_KEY = 'quantis-preferences';
 
 export interface StoredPreferences {
   feedType?: 'all' | 'news' | 'tweet' | 'telegram';
-  intelTab?: 'Markets' | 'Economy' | 'Disasters';
+  intelTab?: 'Markets' | 'Economy' | 'Disasters' | 'Trends';
   eventsCategory?: string;
   marketsCategory?: string;
 }

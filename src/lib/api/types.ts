@@ -137,6 +137,7 @@ export interface EventData {
   volume: number;
   liquidity: number;
   markets: EventMarket[];
+  slug?: string;
 }
 
 export interface MoverEntry {

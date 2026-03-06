@@ -77,6 +77,15 @@ export interface GDACSFeature {
   };
 }
 
+export interface TrendItem {
+  title: string;
+  traffic: string;
+  publishedAt: string;
+  picture?: string;
+  pictureSource?: string;
+  articles: { title: string; url: string; source: string }[];
+}
+
 export interface WeatherAlert {
   id?: string;
   properties?: {
