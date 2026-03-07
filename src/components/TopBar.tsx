@@ -23,6 +23,9 @@ const nav: { href: string; label: string; exact?: boolean }[] = [
   { href: '/intel', label: 'Intel' },
   { href: '/globe', label: 'Globe' },
   { href: '/markets', label: 'Markets' },
+  { href: '/wallets', label: 'Wallets' },
+  { href: '/watchlist', label: 'Watchlist' },
+  { href: '/token', label: '$QUANT' },
 ];
 
 export function TopBar() {

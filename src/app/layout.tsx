@@ -3,6 +3,7 @@ import { JetBrains_Mono } from 'next/font/google';
 import { Providers } from '@/components/Providers';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import { TopBar } from '@/components/TopBar';
+import { TokenTicker } from '@/components/TokenTicker';
 import { WalkthroughOverlay } from '@/components/WalkthroughOverlay';
 import './globals.css';
 
@@ -46,7 +47,10 @@ export default function RootLayout({
           >
             Skip to main content
           </a>
-          <div className="flex h-screen flex-col overflow-hidden">
+          <div className="flex h-screen w-full flex-col overflow-hidden">
+            <div className="w-full shrink-0">
+              <TokenTicker />
+            </div>
             <TopBar />
             <main id="main-content" className="flex-1 overflow-hidden bg-background" tabIndex={-1}>
               <RouteErrorBoundary>{children}</RouteErrorBoundary>

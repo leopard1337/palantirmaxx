@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const HELIUS_RPC = 'https://mainnet.helius-rpc.com/?api-key=3d53f1e2-28b8-4261-85b1-ba0d45765b19';
-
-/** $QUANT token mint address */
-const QUANTIS_TOKEN_MINT =
-  process.env.QUANTIS_TOKEN_MINT || '3pMnJYtaLD1WP5mVjVAw7ExxWywMtvmh1uhHqribpump';
+import { HELIUS_RPC_URL, QUANTIS_TOKEN_MINT } from '@/lib/helius';
 const REQUIRED_BALANCE = 100_000;
 
 /** Whitelisted addresses that bypass token gate */
@@ -24,7 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(HELIUS_RPC, {
+    const res = await fetch(HELIUS_RPC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

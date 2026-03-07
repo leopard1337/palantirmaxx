@@ -217,7 +217,7 @@ export async function fetchFRED(seriesId = 'UNRATE', limit = 120): Promise<{ dat
   return typeof data === 'object' && data !== null && 'data' in data ? (data as { data?: Array<{ date: string; value: number }> }) : { data: [] };
 }
 
-// ─── Quantis/Glint (bearer required – app proxies with token) ─────────────────
+// ─── Quantis API (bearer required – app proxies with token) ───────────────────
 
 export async function fetchFeed(page = 1, count = 20): Promise<FeedResponse | null> {
   try {

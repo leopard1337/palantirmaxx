@@ -20,6 +20,9 @@ import { EventsWidget } from './widgets/EventsWidget';
 import { FeedWidget } from './widgets/FeedWidget';
 import { MarketsWidget } from './widgets/MarketsWidget';
 import { MoversWidget } from './widgets/MoversWidget';
+import { SolanaActivityWidget } from './widgets/SolanaActivityWidget';
+import { WalletTrackerWidget } from './widgets/WalletTrackerWidget';
+import { CoinWatchlistWidget } from './widgets/CoinWatchlistWidget';
 
 const FlightGlobeWidget = dynamic(
   () => import('./widgets/FlightGlobeWidget').then((m) => ({ default: m.FlightGlobeWidget })),
@@ -176,6 +179,12 @@ function WidgetContent({
       return <DisastersWeatherWidget />;
     case 'intel-energy':
       return <EnergyWidget />;
+    case 'solana-activity':
+      return <SolanaActivityWidget />;
+    case 'wallet-tracker':
+      return <WalletTrackerWidget />;
+    case 'coin-watchlist':
+      return <CoinWatchlistWidget />;
     default:
       return (
         <div className="flex items-center justify-center h-full text-zinc-500 text-[11px]">

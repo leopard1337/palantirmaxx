@@ -4,11 +4,27 @@
   "description": "Quantis data layer for agents – fetch intel, markets, feed as JSON",
   "type": "module",
   "bin": {
-    "quantis": "./dist/index.js"
+    "quantis-cli": "dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leopard1337/palantirmaxx.git",
+    "directory": "cli"
+  },
+  "keywords": [
+    "quantis",
+    "cli",
+    "prediction-markets",
+    "intel",
+    "agents",
+    "data"
+  ],
+  "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc",
     "prepublishOnly": "npm run build",
     "start": "node dist/index.js",
     "dev": "tsc && node dist/index.js",

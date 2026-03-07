@@ -7,7 +7,7 @@ export const config = {
     return process.env.QUANTIS_API_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://quantis.gg';
   },
 
-  /** Bearer token for Glint/Quantis API (feed, events, markets). Required for full data. */
+  /** Bearer token for Quantis API (feed, events). Required for full data. */
   get bearer(): string | undefined {
     return (
       process.env.QUANTIS_BEARER ??

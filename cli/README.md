@@ -54,7 +54,7 @@ quantis trade             # Stub (Quantis is data-only)
 
 ### Data Output (for agents)
 
-- **`quantis data -j`** – Full JSON: intel (crypto, stablecoins, trends, ISS, FRED, treasury, BLS, oil, GDACS, weather, USGS, flights), markets (Polymarket + Glint), feed
+- **`quantis data -j`** – Full JSON: intel (crypto, stablecoins, trends, ISS, FRED, treasury, BLS, oil, GDACS, weather, USGS, flights), markets (Polymarket + events), feed
 - **`quantis data --intel -j`** – Intel subset
 - **`quantis data --markets -j`** – Markets subset
 - **`quantis data --feed -j`** – Feed subset
@@ -62,5 +62,4 @@ quantis trade             # Stub (Quantis is data-only)
 
 ## Architecture
 
-- **data** – Fetches from `/api/intel/*` (crypto, trends, ISS, Polymarket, FRED, treasury, disasters, flights, etc.) and `/api/quantis/*` (feed, Glint events)
-- **trade** – Stub; Quantis is data-only; agents handle execution
+- **data** – Fetches from `/api/intel/*` (crypto, trends, ISS, Polymarket, FRED, treasury, disasters, flights, etc.) and `/api/quantis/*` (feed, prediction market events)

@@ -20,7 +20,10 @@ export type WidgetType =
   | 'intel-crypto'
   | 'intel-economic'
   | 'intel-disasters'
-  | 'intel-energy';
+  | 'intel-energy'
+  | 'solana-activity'
+  | 'wallet-tracker'
+  | 'coin-watchlist';
 
 export interface PanelConfig {
   id: string;
@@ -102,4 +105,7 @@ export const WIDGET_CATALOG: {
   { type: 'intel-economic', label: 'Economic Indicators', group: 'Intel', description: 'FRED: UNRATE, VIX, 10Y, Fed Funds, CPI' },
   { type: 'intel-disasters', label: 'Disasters & Weather', group: 'Intel', description: 'Earthquakes, GDACS, weather alerts' },
   { type: 'intel-energy', label: 'Energy Prices', group: 'Intel', description: 'Commodity energy prices' },
+  { type: 'solana-activity', label: 'Solana Activity', group: 'Solana', description: 'Live DEX swaps & whale alerts' },
+  { type: 'wallet-tracker', label: 'Wallet Tracker', group: 'Solana', description: 'Track wallets and their activity' },
+  { type: 'coin-watchlist', label: 'Coin Watchlist', group: 'Solana', description: 'Watch tokens and their metrics' },
 ];

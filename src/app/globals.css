@@ -67,6 +67,14 @@ body {
   50% { opacity: 0.5; }
 }
 
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-33.333%); }
+}
+.animate-ticker-scroll {
+  animation: ticker-scroll 20s linear infinite;
+}
+
 /* Skip link - visible only when focused */
 .skip-to-content {
   position: absolute;
@@ -202,6 +210,9 @@ textarea:focus:not(:focus-visible) {
   .animate-backdrop-fade,
   .animate-tab-fade,
   .animate-shimmer {
+    animation: none !important;
+  }
+  .animate-ticker-scroll {
     animation: none !important;
   }
   .transition-lift:hover {

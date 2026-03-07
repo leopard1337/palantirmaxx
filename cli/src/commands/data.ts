@@ -9,44 +9,114 @@ import {
   type AgentData,
 } from '../data/fetcher.js';
 
+function formatHuman(data: unknown, mode: 'all' | 'intel' | 'markets' | 'feed'): string {
+  switch (mode) {
+    case 'intel':
+      return formatIntel(data as { crypto: unknown[]; trends: unknown[]; iss: unknown });
+    case 'markets':
+      return formatMarkets(data as { polymarket: unknown[]; events: unknown[] });
+    case 'feed':
+      return formatFeed(data as { items: unknown[]; total: number });
+    case 'all':
+      return formatAll(data as AgentData);
+    default:
+      return String(data);
+  }
+}
+
+function output(
+  jsonData: unknown,
+  humanData: unknown,
+  json: boolean,
+  pretty: boolean,
+  mode: 'all' | 'intel' | 'markets' | 'feed',
+): void {
+  if (json) {
+    const str = pretty ? JSON.stringify(jsonData, null, 2) : JSON.stringify(jsonData);
+    console.log(str);
+  } else {
+    console.log(formatHuman(humanData, mode));
+  }
+}
+
 export async function runDataCommand(opts: {
   json?: boolean;
+  pretty?: boolean;
   intel?: boolean;
   markets?: boolean;
   feed?: boolean;
 }) {
   const json = opts.json ?? !process.stdout.isTTY;
+  const pretty = opts.pretty ?? false;
 
-  if (opts.intel) {
-    const [crypto, trends, iss] = await Promise.all([
-      fetchCrypto(),
-      fetchTrends(),
-      fetchISS(),
-    ]);
-    const data = { crypto, trends, iss, fetchedAt: new Date().toISOString() };
-    console.log(json ? JSON.stringify(data, null, 2) : formatIntel(data));
-    return;
+  try {
+    if (opts.intel) {
+      const [crypto, trends, iss] = await Promise.all([
+        fetchCrypto(),
+        fetchTrends(),
+        fetchISS(),
+      ]);
+      const data = { crypto, trends, iss, fetched_at: new Date().toISOString() };
+      output(data, data, json, pretty, 'intel');
+      return;
+    }
+
+    if (opts.markets) {
+      const [polymarket, events] = await Promise.all([
+        fetchPolymarket(50),
+        fetchGlintEvents('all'),
+      ]);
+      const data = { polymarket, events, fetched_at: new Date().toISOString() };
+      output(data, data, json, pretty, 'markets');
+      return;
+    }
+
+    if (opts.feed) {
+      const feed = await fetchFeed(1, 50);
+      const data = {
+        items: feed?.items ?? [],
+        total: feed?.total ?? 0,
+        fetched_at: new Date().toISOString(),
+      };
+      output(data, data, json, pretty, 'feed');
+      return;
+    }
+
+    const data = await fetchAll();
+    const agentData = toAgentSchema(data);
+    output(agentData, data, json, pretty, 'all');
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const out = json ? JSON.stringify({ error: msg }) : `Error: ${msg}\n`;
+    console.log(out);
+    process.exitCode = 1;
   }
+}
 
-  if (opts.markets) {
-    const [polymarket, glint] = await Promise.all([
-      fetchPolymarket(50),
-      fetchGlintEvents('all'),
-    ]);
-    const data = { polymarket, glint, fetchedAt: new Date().toISOString() };
-    console.log(json ? JSON.stringify(data, null, 2) : formatMarkets(data));
-    return;
-  }
-
-  if (opts.feed) {
-    const feed = await fetchFeed(1, 50);
-    const data = { items: feed?.items ?? [], total: feed?.total ?? 0, fetchedAt: new Date().toISOString() };
-    console.log(json ? JSON.stringify(data, null, 2) : formatFeed(data));
-    return;
-  }
-
-  const data = await fetchAll();
-  console.log(json ? JSON.stringify(data, null, 2) : formatAll(data));
+/** Normalize for agents: snake_case, drop empty, consistent shape. No vendor names in output. */
+function toAgentSchema(data: AgentData): Record<string, unknown> {
+  return {
+    intel: {
+      crypto: data.intel.crypto,
+      stablecoins: data.intel.stablecoins,
+      trends: data.intel.trends,
+      iss: data.intel.iss,
+      fred: data.intel.fred?.data ?? [],
+      treasury: data.intel.treasury?.data ?? [],
+      bls: data.intel.bls,
+      oil: data.intel.oil,
+      gdacs: data.intel.gdacs?.features ?? [],
+      weather: data.intel.weather?.features ?? [],
+      usgs: data.intel.usgs?.features ?? [],
+      flights: data.intel.flights ?? [],
+    },
+    markets: {
+      polymarket: data.markets.polymarket,
+      events: data.markets.glint,
+    },
+    feed: data.feed,
+    fetched_at: data.fetchedAt,
+  };
 }
 
 function formatIntel(data: { crypto: unknown[]; trends: unknown[]; iss: unknown }): string {
@@ -68,10 +138,10 @@ function formatIntel(data: { crypto: unknown[]; trends: unknown[]; iss: unknown 
   return out;
 }
 
-function formatMarkets(data: { polymarket: unknown[]; glint: unknown[] }): string {
+function formatMarkets(data: { polymarket: unknown[]; events: unknown[] }): string {
   let out = '\n📈 Quantis Markets\n\n';
   out += `Polymarket: ${data.polymarket.length} events\n`;
-  out += `Glint: ${data.glint.length} events\n\n`;
+  out += `Events: ${data.events.length} markets\n\n`;
   return out;
 }
 
@@ -89,7 +159,7 @@ function formatAll(data: AgentData): string {
   out += `Intel: crypto ${data.intel.crypto.length}, stablecoins ${data.intel.stablecoins.length}, trends ${data.intel.trends.length}`;
   if (data.intel.iss) out += `, ISS @ ${data.intel.iss.lat.toFixed(1)}°`;
   out += '\n';
-  out += `Markets: Polymarket ${data.markets.polymarket.length}, Glint ${data.markets.glint.length}\n`;
+  out += `Markets: Polymarket ${data.markets.polymarket.length}, events ${data.markets.glint.length}\n`;
   out += `Feed: ${data.feed.length} items\n`;
   out += `Disasters: GDACS ${(data.intel.gdacs?.features?.length ?? 0)}, Weather ${(data.intel.weather?.features?.length ?? 0)}, USGS ${(data.intel.usgs?.features?.length ?? 0)}\n`;
   out += `Flights: ${data.intel.flights?.length ?? 0}\n`;

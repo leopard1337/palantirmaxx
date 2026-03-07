@@ -49,6 +49,33 @@ export function formatVolume(vol: number): string {
   return `$${vol.toFixed(0)}`;
 }
 
+/** Format USD for display */
+export function formatUsd(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return '—';
+  if (value >= 1_000_000) return `$${(value / 1e6).toFixed(2)}M`;
+  if (value >= 1_000) return `$${(value / 1e3).toFixed(1)}K`;
+  if (value >= 1) return `$${value.toFixed(2)}`;
+  if (value >= 0.01) return `$${value.toFixed(4)}`;
+  return `$${value.toExponential(2)}`;
+}
+
+/** Format token amount (K, M, B) */
+export function formatTokenAmount(amount: number, decimals = 6): string {
+  const raw = amount / 10 ** decimals;
+  if (raw >= 1e9) return `${(raw / 1e9).toFixed(2)}B`;
+  if (raw >= 1e6) return `${(raw / 1e6).toFixed(2)}M`;
+  if (raw >= 1e3) return `${(raw / 1e3).toFixed(1)}K`;
+  return raw.toLocaleString(undefined, { maximumFractionDigits: 4 });
+}
+
+/** Format SOL amount */
+export function formatSol(lamports: number): string {
+  const sol = lamports / 1e9;
+  if (sol >= 1_000) return `${(sol / 1e3).toFixed(1)}K SOL`;
+  if (sol >= 1) return `${sol.toFixed(2)} SOL`;
+  return `${sol.toFixed(4)} SOL`;
+}
+
 /** Normalize API timestamp to ms. APIs often use Unix seconds (10 digits). */
 function toTimestampMs(value: unknown): number {
   if (value == null) return Date.now();
