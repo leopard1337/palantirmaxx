@@ -121,10 +121,10 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Nav - full-width horizontal slider on mobile */}
+      {/* Nav - centered on desktop */}
       <nav
         ref={navRef}
-        className="flex-1 flex items-center md:justify-center justify-start gap-2 md:gap-1 min-w-0 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory px-3 md:px-0 py-1.5 md:py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]"
+        className="flex-1 flex items-center md:justify-center justify-start gap-2 md:gap-0.5 min-w-0 overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory px-3 md:px-0 py-1.5 md:py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]"
         aria-label="Main navigation"
       >
         {nav.filter((item) => item.href !== '/globe' || isDesktop).map((item) => {
@@ -139,7 +139,7 @@ export function TopBar() {
               href={item.href}
               onMouseEnter={() => prefetchRoute(item.href)}
               data-nav-active={active ? 'true' : undefined}
-              className={`relative rounded-md px-3.5 md:px-3 py-2.5 md:py-1.5 min-h-[44px] md:min-h-0 flex items-center text-[12px] md:text-[13px] transition-all duration-200 shrink-0 snap-center active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+              className={`relative rounded-md px-3 md:px-2.5 py-2.5 md:py-1.5 min-h-[44px] md:min-h-0 flex items-center text-[11px] md:text-[12px] transition-all duration-200 shrink-0 snap-center active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 active
                   ? 'text-foreground font-medium'
                   : 'text-zinc-500 hover:text-zinc-200'

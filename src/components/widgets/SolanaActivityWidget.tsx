@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState, useEffect, useCallback } from 'react';
+import { memo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSolanaActivity } from '@/lib/api/helius';
@@ -9,9 +9,9 @@ import { AddressLink, shortenAddress } from '@/components/AddressLink';
 import { formatTimeAgo } from '@/lib/utils';
 import { useHeliusDrawer } from '@/context/HeliusDrawerContext';
 import { WhaleAlertFeed } from '@/components/WhaleAlertFeed';
+import { useTrackedWallets } from '@/hooks/useTrackedWallets';
 
 const FILTERS = ['all', 'whale', 'swap'] as const;
-const TRACKED_WALLETS_KEY = 'quantis-tracked-wallets';
 
 function isValidSolanaAddress(addr: string): boolean {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr.trim());
@@ -81,34 +81,17 @@ export function SolanaActivityWidget({
   onAddressClick?: (address: string) => void;
 }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('all');
-  const [trackedWallets, setTrackedWallets] = useState<string[]>([]);
   const [addInput, setAddInput] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const { openTransactionDrawer } = useHeliusDrawer();
-
-  const loadWallets = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(TRACKED_WALLETS_KEY);
-      if (raw) setTrackedWallets(JSON.parse(raw));
-    } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => loadWallets(), [loadWallets]);
+  const { wallets: trackedWallets, addWallet: addWalletToStore, removeWallet } = useTrackedWallets();
 
   const addWallet = () => {
     const addr = addInput.trim();
     if (!addr || !isValidSolanaAddress(addr)) return;
-    const next = [...new Set([...trackedWallets, addr])].slice(0, 10);
-    setTrackedWallets(next);
-    localStorage.setItem(TRACKED_WALLETS_KEY, JSON.stringify(next));
+    addWalletToStore(addr);
     setAddInput('');
     setShowAdd(false);
-  };
-
-  const removeWallet = (addr: string) => {
-    const next = trackedWallets.filter((w) => w !== addr);
-    setTrackedWallets(next);
-    localStorage.setItem(TRACKED_WALLETS_KEY, JSON.stringify(next));
   };
 
   const handleAddressClick = (addr: string) => {
@@ -188,25 +171,30 @@ export function SolanaActivityWidget({
       </div>
       <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1.5">
         <WhaleAlertFeed maxItems={10} />
-        {isLoading && Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="h-[52px] animate-pulse rounded-lg bg-white/[0.03]" />
-        ))}
-        {error && (
-          <div className="px-3 py-4 text-center text-[11px] text-red-400/70">
-            Failed to load activity
-          </div>
-        )}
-        {!isLoading && !error && items.length === 0 && (
-          <div className="px-3 py-6 text-center">
-            <p className="text-[11px] text-zinc-500 mb-1">No activity yet</p>
-            <p className="text-[10px] text-zinc-600">
-              {filter === 'whale' ? 'No whale transactions detected. Try lowering the filter.' : 'Waiting for new transactions...'}
-            </p>
-          </div>
-        )}
-        {items.map((item) => (
-          <ActivityRow key={item.id} item={item} onAddressClick={handleAddressClick} />
-        ))}
+        <div className="pt-2 border-t border-white/[0.06]">
+          <p className="px-2 mb-1.5 text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+            DEX & tracked wallets
+          </p>
+          {isLoading && Array.from({ length: 5 }, (_, i) => (
+            <div key={i} className="h-[52px] animate-pulse rounded-lg bg-white/[0.03]" />
+          ))}
+          {error && (
+            <div className="px-3 py-4 text-center text-[11px] text-red-400/70">
+              Failed to load DEX activity
+            </div>
+          )}
+          {!isLoading && !error && items.length === 0 && (
+            <div className="px-3 py-4 text-center">
+              <p className="text-[11px] text-zinc-500 mb-1">No DEX or tracked wallet activity yet</p>
+              <p className="text-[10px] text-zinc-600">
+                {filter === 'whale' ? 'No whale swaps in DEX feed. Try "All" or add wallets to track.' : 'Add wallets above or wait for new swaps.'}
+              </p>
+            </div>
+          )}
+          {items.map((item) => (
+            <ActivityRow key={item.id} item={item} onAddressClick={handleAddressClick} />
+          ))}
+        </div>
       </div>
     </div>
   );

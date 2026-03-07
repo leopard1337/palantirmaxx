@@ -1,42 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTrackedWallet, type TrackedWalletData } from '@/lib/api/helius';
+import { fetchTrackedWallet } from '@/lib/api/helius';
 import { shortenAddress } from '@/components/AddressLink';
 import { formatTimeAgo } from '@/lib/utils';
 import { TransactionDrawer } from '@/components/TransactionDrawer';
-
-const STORAGE_KEY = 'quantis-tracked-wallets';
-
-function useTrackedWallets() {
-  const [wallets, setWallets] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setWallets(JSON.parse(raw));
-    } catch { /* ignore */ }
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(wallets));
-  }, [wallets, loaded]);
-
-  const addWallet = useCallback((addr: string) => {
-    const trimmed = addr.trim();
-    if (!trimmed || wallets.includes(trimmed)) return;
-    setWallets((prev) => [...prev, trimmed]);
-  }, [wallets]);
-
-  const removeWallet = useCallback((addr: string) => {
-    setWallets((prev) => prev.filter((w) => w !== addr));
-  }, []);
-
-  return { wallets, addWallet, removeWallet, loaded };
-}
+import { useTrackedWallets } from '@/hooks/useTrackedWallets';
 
 function formatUsd(val: number): string {
   if (val >= 1_000_000) return `$${(val / 1e6).toFixed(2)}M`;
@@ -77,9 +47,9 @@ function WalletCard({
   });
 
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] overflow-hidden">
       {/* Wallet header */}
-      <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-white/[0.05] px-4 py-2.5">
         <div className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0" />
         <button
           type="button"
@@ -208,44 +178,42 @@ export default function WalletsPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 border-b border-white/[0.06] px-5 py-4 text-center">
-        <h1 className="text-[16px] font-bold text-zinc-100 mb-1">Wallet Tracker</h1>
-        <p className="text-[11px] text-zinc-400">
-          Track multiple Solana wallets. See holdings, balances, and recent activity in real-time.
+      <div className="shrink-0 border-b border-white/[0.06] px-6 py-3.5 text-center">
+        <h1 className="text-[15px] font-bold text-zinc-100">Wallet Tracker</h1>
+        <p className="text-[11px] text-zinc-500 mt-0.5">
+          Track Solana wallets — holdings, balances, and recent activity
         </p>
       </div>
 
       {/* Add wallet */}
-      <div className="shrink-0 border-b border-white/[0.06] px-5 py-3">
-        <div className="flex items-center gap-2 max-w-xl mx-auto">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              placeholder="Paste a Solana wallet address..."
-              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[12px] text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors focus:border-accent/30 focus:bg-white/[0.05] font-mono"
-            />
-          </div>
+      <div className="shrink-0 border-b border-white/[0.06] px-6 py-3">
+        <div className="flex items-center gap-2 max-w-md mx-auto">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            placeholder="Paste wallet address..."
+            className="flex-1 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-[12px] text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-accent/30 font-mono"
+          />
           <button
             type="button"
             onClick={handleAdd}
             disabled={input.trim().length < 32}
-            className="rounded-lg bg-accent/15 border border-accent/20 px-4 py-2 text-[11px] font-semibold text-accent transition-all hover:bg-accent/25 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="rounded-lg bg-accent/15 px-4 py-2 text-[11px] font-semibold text-accent hover:bg-accent/20 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
             Track
           </button>
         </div>
         {wallets.length > 0 && (
-          <p className="mt-2 text-[10px] text-zinc-500 text-center">
+          <p className="mt-1.5 text-[10px] text-zinc-500 text-center">
             Tracking {wallets.length} wallet{wallets.length !== 1 ? 's' : ''}
           </p>
         )}
       </div>
 
       {/* Wallet list */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
         {!loaded && (
           <div className="space-y-3">
             {Array.from({ length: 2 }, (_, i) => (
@@ -255,18 +223,18 @@ export default function WalletsPage() {
         )}
 
         {loaded && wallets.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] mb-4">
-              <svg className="h-6 w-6 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/[0.04] border border-white/[0.06] mb-3">
+              <svg className="h-5 w-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
               </svg>
             </div>
-            <p className="text-[12px] text-zinc-400 mb-1">No wallets tracked yet</p>
-            <p className="text-[11px] text-zinc-500">Paste a Solana address above to start tracking</p>
+            <p className="text-[12px] text-zinc-500 mb-0.5">No wallets yet</p>
+            <p className="text-[11px] text-zinc-600">Paste an address above to track</p>
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {wallets.map((addr) => (
             <WalletCard
               key={addr}

@@ -1,43 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCoinInfo, fetchCoinHolders, fetchCoinActivity } from '@/lib/api/helius';
-import type { HeliusAsset, HeliusTransaction } from '@/lib/api/helius-types';
 import { shortenAddress } from '@/components/AddressLink';
 import { formatTimeAgo } from '@/lib/utils';
 import { TransactionDrawer } from '@/components/TransactionDrawer';
-
-const STORAGE_KEY = 'quantis-watchlist-coins';
-
-function useWatchlistCoins() {
-  const [coins, setCoins] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setCoins(JSON.parse(raw));
-    } catch { /* ignore */ }
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(coins));
-  }, [coins, loaded]);
-
-  const addCoin = useCallback((mint: string) => {
-    const trimmed = mint.trim();
-    if (!trimmed || coins.includes(trimmed)) return;
-    setCoins((prev) => [...prev, trimmed]);
-  }, [coins]);
-
-  const removeCoin = useCallback((mint: string) => {
-    setCoins((prev) => prev.filter((c) => c !== mint));
-  }, []);
-
-  return { coins, addCoin, removeCoin, loaded };
-}
+import { useWatchlistCoins } from '@/hooks/useWatchlistCoins';
 
 function formatNumber(val: number): string {
   if (val >= 1e9) return `${(val / 1e9).toFixed(2)}B`;
@@ -100,10 +69,10 @@ function CoinCard({
   const holderTotal = holdersData?.total ?? 0;
 
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden transition-all">
+    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] overflow-hidden transition-all">
       {/* Header */}
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/[0.02] transition-colors"
+        className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-white/[0.02] transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
         {image && (
@@ -264,44 +233,42 @@ export default function WatchlistPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 border-b border-white/[0.06] px-5 py-4 text-center">
-        <h1 className="text-[16px] font-bold text-zinc-100 mb-1">Coin Watchlist</h1>
-        <p className="text-[11px] text-zinc-400">
-          Track any Solana token. View price, supply, holders, and recent activity.
+      <div className="shrink-0 border-b border-white/[0.06] px-6 py-3.5 text-center">
+        <h1 className="text-[15px] font-bold text-zinc-100">Coin Watchlist</h1>
+        <p className="text-[11px] text-zinc-500 mt-0.5">
+          Track tokens — price, supply, holders, and activity
         </p>
       </div>
 
       {/* Add coin */}
-      <div className="shrink-0 border-b border-white/[0.06] px-5 py-3">
-        <div className="flex items-center gap-2 max-w-xl mx-auto">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              placeholder="Paste a token mint address..."
-              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[12px] text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors focus:border-accent/30 focus:bg-white/[0.05] font-mono"
-            />
-          </div>
+      <div className="shrink-0 border-b border-white/[0.06] px-6 py-3">
+        <div className="flex items-center gap-2 max-w-md mx-auto">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            placeholder="Paste token mint address..."
+            className="flex-1 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-[12px] text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-accent/30 font-mono"
+          />
           <button
             type="button"
             onClick={handleAdd}
             disabled={input.trim().length < 32}
-            className="rounded-lg bg-accent/15 border border-accent/20 px-4 py-2 text-[11px] font-semibold text-accent transition-all hover:bg-accent/25 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="rounded-lg bg-accent/15 px-4 py-2 text-[11px] font-semibold text-accent hover:bg-accent/20 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
             Watch
           </button>
         </div>
         {coins.length > 0 && (
-          <p className="mt-2 text-[10px] text-zinc-500 text-center">
+          <p className="mt-1.5 text-[10px] text-zinc-500 text-center">
             Watching {coins.length} token{coins.length !== 1 ? 's' : ''}
           </p>
         )}
       </div>
 
       {/* Coin list */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
         {!loaded && (
           <div className="space-y-3">
             {Array.from({ length: 2 }, (_, i) => (
@@ -311,14 +278,14 @@ export default function WatchlistPage() {
         )}
 
         {loaded && coins.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] mb-4">
-              <svg className="h-6 w-6 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/[0.04] border border-white/[0.06] mb-3">
+              <svg className="h-5 w-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
               </svg>
             </div>
-            <p className="text-[12px] text-zinc-400 mb-1">No coins in watchlist</p>
-            <p className="text-[11px] text-zinc-500">Paste a token mint address above to start watching</p>
+            <p className="text-[12px] text-zinc-500 mb-0.5">No tokens yet</p>
+            <p className="text-[11px] text-zinc-600">Paste a mint address above to watch</p>
           </div>
         )}
 

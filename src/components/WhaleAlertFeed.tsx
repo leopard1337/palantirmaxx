@@ -24,7 +24,9 @@ function formatUsd(val: number): string {
 }
 
 function formatTimeAgo(ts: number): string {
-  const diff = Math.floor(Date.now() / 1000 - ts);
+  const seconds = ts > 1e12 ? Math.floor(ts / 1000) : ts;
+  let diff = Math.floor(Date.now() / 1000 - seconds);
+  if (diff < 0) return 'just now';
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -38,7 +40,7 @@ const ERROR_LABELS: Record<string, string> = {
   'invalid blockchain': 'Solana may not be supported for your plan.',
   'min usd value too low': 'min_value_usd must be ≥ $100,000',
   'invalid request': 'Invalid subscription format',
-  'alert rate limit exceeded': 'Rate limit reached. Try again later.',
+  'alert rate limit exceeded': 'Rate limit (100/hr). Try again in an hour.',
 };
 
 export function WhaleAlertFeed({ maxItems = 20 }: { maxItems?: number }) {
@@ -68,11 +70,11 @@ export function WhaleAlertFeed({ maxItems = 20 }: { maxItems?: number }) {
     ws.onopen = () => {
       if (!mountedRef.current) return;
       setStatus('connected');
-      // Subscribe to all blockchains; we filter for Solana client-side.
-      // Omitting blockchains avoids "invalid blockchain" if Solana has different naming.
+      // Solana only + $500K min to stay well under 100 alerts/hour limit
       ws.send(JSON.stringify({
         type: 'subscribe_alerts',
-        min_value_usd: 100000,
+        blockchains: ['solana'],
+        min_value_usd: 500000,
       }));
     };
 
@@ -164,7 +166,7 @@ export function WhaleAlertFeed({ maxItems = 20 }: { maxItems?: number }) {
       </div>
       {alerts.length === 0 && status === 'connected' && (
         <p className="px-3 py-2 text-[10px] text-zinc-500">
-          Waiting for Solana whale alerts ($100K+). Alerts stream in real-time.
+          Waiting for Solana whale alerts ($500K+). Alerts stream in real-time.
         </p>
       )}
       {alerts.map((a) => {

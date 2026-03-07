@@ -1,12 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTrackedWallet } from '@/lib/api/helius';
 import { shortenAddress } from '@/components/AddressLink';
-import { formatTimeAgo } from '@/lib/utils';
-
-const STORAGE_KEY = 'quantis-tracked-wallets';
+import { useTrackedWallets } from '@/hooks/useTrackedWallets';
 
 function formatUsd(val: number): string {
   if (val >= 1_000_000) return `$${(val / 1e6).toFixed(2)}M`;
@@ -41,14 +38,7 @@ function WalletMiniCard({ address }: { address: string }) {
 }
 
 export function WalletTrackerWidget() {
-  const [wallets, setWallets] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setWallets(JSON.parse(raw));
-    } catch { /* ignore */ }
-  }, []);
+  const { wallets } = useTrackedWallets();
 
   if (wallets.length === 0) {
     return (

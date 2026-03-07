@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCoinInfo } from '@/lib/api/helius';
-import { shortenAddress } from '@/components/AddressLink';
-
-const STORAGE_KEY = 'quantis-watchlist-coins';
+import { useWatchlistCoins } from '@/hooks/useWatchlistCoins';
 
 function formatPrice(val: number): string {
   if (val >= 1) return `$${val.toFixed(2)}`;
@@ -57,14 +54,7 @@ function CoinMiniCard({ mint }: { mint: string }) {
 }
 
 export function CoinWatchlistWidget() {
-  const [coins, setCoins] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setCoins(JSON.parse(raw));
-    } catch { /* ignore */ }
-  }, []);
+  const { coins } = useWatchlistCoins();
 
   if (coins.length === 0) {
     return (
